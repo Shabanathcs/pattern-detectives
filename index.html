@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pattern Detectives – AI Lesson</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1530; --bg2:#182049; --card:#1f2a5c; --ink:#f3f6ff; --muted:#b8c2ee;
+    --a:#22d3ee; --b:#a78bfa; --c:#fbbf24; --ok:#34d399; --bad:#fb7185;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Nunito',sans-serif;background:radial-gradient(circle at 20% 0%,#24306e 0,var(--bg) 55%);color:var(--ink);font-size:23px;line-height:1.5;min-height:100vh}
+  h1,h2,h3{font-family:'Baloo 2',cursive;line-height:1.15}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 18px}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:20;background:rgba(15,21,48,.92);backdrop-filter:blur(8px);border-bottom:1px solid #2c3874}
+  nav .wrap{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;overflow:visible;padding:10px 12px;max-width:1300px}
+  nav a{flex:0 0 auto;white-space:nowrap;text-decoration:none;color:var(--ink);background:var(--card);padding:8px 14px;border-radius:999px;font-weight:800;font-size:16px;border:2px solid transparent}
+  nav a:hover{border-color:var(--a)}
+
+  /* HERO */
+  .hero{text-align:center;padding:60px 0 40px}
+  .badge{display:inline-block;background:var(--c);color:#1a1a1a;font-weight:800;padding:6px 16px;border-radius:999px;font-size:16px;letter-spacing:.5px}
+  .hero h1{font-size:clamp(42px,8vw,74px);margin:16px 0 8px;background:linear-gradient(90deg,var(--a),var(--b),var(--c));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:22px;color:var(--muted)}
+  .goals{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:30px;text-align:left}
+  .goal{background:var(--card);border-radius:18px;padding:18px;border-left:6px solid var(--a)}
+  .goal:nth-child(2){border-color:var(--b)} .goal:nth-child(3){border-color:var(--c)}
+  .goal b{font-size:30px;display:block}
+
+  /* SECTIONS */
+  section{padding:46px 0;border-top:1px dashed #2c3874}
+  .stage{font-weight:800;color:var(--a);font-size:16px;letter-spacing:1px;text-transform:uppercase}
+  section h2{font-size:clamp(32px,5vw,44px);margin:4px 0 14px}
+  .card{background:var(--card);border-radius:20px;padding:22px;margin:14px 0;font-size:24px}
+  .big{font-size:28px;font-weight:800}
+  .def{background:linear-gradient(135deg,#2b3a85,#3b2a7a);border:3px solid var(--b);border-radius:22px;padding:24px;font-size:24px;text-align:center}
+  .def em{color:var(--c);font-style:normal;font-weight:800}
+
+  .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+  .tile{min-width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;background:var(--bg2)}
+  .q{color:var(--c);border:3px dashed var(--c)}
+  .opts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+  button{font-family:inherit;cursor:pointer}
+  .opt{background:var(--bg2);color:var(--ink);border:3px solid #3a4892;border-radius:14px;padding:10px 20px;font-size:26px;font-weight:800;transition:.15s}
+  .opt:hover{transform:translateY(-2px);border-color:var(--a)}
+  .opt.right{background:var(--ok);color:#06281c;border-color:var(--ok)}
+  .opt.wrong{background:var(--bad);color:#3a0712;border-color:var(--bad)}
+  .fb{text-align:center;font-weight:800;min-height:32px;margin-top:10px;font-size:23px}
+  .btn{background:var(--a);color:#062430;border:none;border-radius:14px;padding:12px 22px;font-size:20px;font-weight:800}
+  .btn.alt{background:var(--b);color:#1d0f44}
+  .center{text-align:center}
+  .score{display:inline-block;background:var(--bg2);padding:6px 14px;border-radius:999px;font-weight:800;color:var(--c)}
+
+  /* Routine timeline */
+  .days{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .day{background:var(--bg2);border-radius:16px;padding:12px;text-align:center}
+  .day h4{font-family:'Baloo 2';font-size:22px;color:var(--a)}
+  .day .ic{font-size:30px;line-height:1.4}
+  .day.mystery{border:3px dashed var(--c)}
+
+  /* Data table */
+  table{width:100%;border-collapse:collapse;font-size:20px;overflow:hidden;border-radius:14px}
+  th,td{padding:10px;text-align:center;border-bottom:1px solid #34408a}
+  th{background:#2b3a85;font-family:'Baloo 2';font-size:22px}
+  tr:nth-child(even) td{background:rgba(255,255,255,.03)}
+  .hl{color:var(--c);font-weight:800}
+
+  /* AI cards */
+  .apps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .app{perspective:900px;height:220px;cursor:pointer}
+  .inner{position:relative;width:100%;height:100%;transition:transform .6s;transform-style:preserve-3d}
+  .app.flip .inner{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:14px;text-align:center;backface-visibility:hidden}
+  .front{background:var(--card);border:3px solid #3a4892}
+  .front .e{font-size:54px}
+  .front h3{font-size:24px}
+  .front small{color:var(--muted);font-size:14px}
+  .back{background:linear-gradient(135deg,#0e7490,#6d28d9);transform:rotateY(180deg);font-size:21px;font-weight:700}
+  .back b{color:var(--c)}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;counter-reset:s}
+  .step{background:var(--bg2);border-radius:16px;padding:16px;text-align:center;position:relative}
+  .step .e{font-size:40px}
+  .step h4{font-family:'Baloo 2';font-size:24px;color:var(--a)}
+  .step p{font-size:21px;color:var(--muted)}
+
+  /* Decision */
+  .scene{font-size:24px;text-align:center;font-weight:700}
+  .scene .e{font-size:60px;display:block}
+  .ifthen{font-family:'Baloo 2';font-size:26px;text-align:center;background:var(--bg2);border-radius:16px;padding:14px;margin-top:10px}
+  .ifthen .k{color:var(--b)} .ifthen .t{color:var(--ok)}
+
+  /* Robot sorter */
+  .sorter{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .bin{background:var(--bg2);border-radius:16px;padding:14px;min-height:120px;text-align:center}
+  .bin h4{font-family:'Baloo 2';font-size:22px}
+  .bin .items{font-size:34px;margin-top:6px;word-wrap:break-word}
+  .current{font-size:80px;text-align:center}
+
+  /* Final */
+  .cert{text-align:center;background:linear-gradient(135deg,#7c3aed,#0891b2);border-radius:24px;padding:30px;display:none}
+  .cert h2{font-size:42px}
+  .recap{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .recap .card{margin:0;font-size:22px}
+  .recap .card b{color:var(--c);font-size:25px}
+  /* School-format blocks */
+  .phase{display:inline-block;font-family:'Baloo 2';font-weight:800;font-size:18px;padding:6px 16px;border-radius:999px;margin-bottom:6px;letter-spacing:.5px}
+  .p-start{background:#f97316;color:#2a1000}
+  .p-main{background:var(--a);color:#062430}
+  .p-plen{background:var(--b);color:#1d0f44}
+  .p-hot{background:#ef4444;color:#fff}
+  .p-lo{background:var(--ok);color:#06281c}
+  .tag{border-radius:16px;padding:16px 20px;margin:14px 0;font-size:23px;display:flex;gap:12px;align-items:flex-start}
+  .tag .ti{font-size:32px;line-height:1}
+  .tag b{display:block;font-family:'Baloo 2';font-size:26px}
+  .t-cross{background:rgba(34,211,238,.12);border:2px solid var(--a)}
+  .t-uae{background:linear-gradient(90deg,rgba(0,115,47,.25),rgba(255,255,255,.06),rgba(206,17,38,.22));border:2px solid #22c55e}
+  .t-moral{background:rgba(251,191,36,.12);border:2px solid var(--c)}
+  .losc{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch}
+  .lo-box{background:linear-gradient(135deg,#065f46,#0e7490);border-radius:22px;padding:24px;display:flex;flex-direction:column;justify-content:center}
+  .sc-box{background:linear-gradient(135deg,#4c1d95,#1e3a8a);border-radius:22px;padding:24px}
+  .lo-box h3,.sc-box h3{font-size:28px;margin-bottom:12px}
+  .lo-line{font-size:24px;font-weight:700;line-height:1.5}
+  .lo-line b,.sc b{color:var(--c)}
+  .sc{list-style:none}
+  .sc li{display:flex;gap:10px;font-size:22px;padding:8px 6px}
+  .sc .ck{font-size:24px;line-height:1.2}
+  .sc li.done{color:var(--ok)}
+  .sc-box small{color:var(--muted);font-size:15px}
+  @media (max-width:760px){.losc{grid-template-columns:1fr}}
+  .hotq{background:var(--card);border-left:6px solid #ef4444;border-radius:18px;padding:18px;margin:12px 0}
+  .hotq .qq{font-size:25px;font-weight:800}
+  .hotq .ans{display:none;margin-top:10px;color:var(--muted);font-size:22px;border-top:1px dashed #3a4892;padding-top:10px}
+  .hotq button{margin-top:10px;font-size:16px;padding:8px 14px}
+  /* Smart rule tasks */
+  .grp-head{background:linear-gradient(135deg,#7c2d12,#9a3412);border-radius:22px;padding:22px;margin-top:26px;text-align:center}
+  .grp-head h3{font-size:32px;margin-bottom:8px}
+  .rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin-top:14px}
+  .rule{background:var(--card);border-radius:20px;padding:18px;border-top:6px solid var(--c)}
+  .rule .gn{font-weight:800;color:var(--c);font-size:18px}
+  .rule .se{font-size:46px;text-align:center}
+  .rule .st{font-size:22px;font-weight:700;text-align:center;margin-bottom:10px}
+  .rule label{font-family:'Baloo 2';font-weight:800;font-size:22px;display:block;margin-top:6px}
+  .rule .lif{color:var(--b)} .rule .lth{color:var(--ok)}
+  .rule input{width:100%;font-family:inherit;font-size:20px;padding:10px 12px;border-radius:12px;border:2px solid #3a4892;background:var(--bg2);color:var(--ink)}
+  .rule input:focus{outline:none;border-color:var(--a)}
+  .rule .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .rule .acts .btn{font-size:17px;padding:9px 14px}
+  .rule .ex{display:none;margin-top:10px;font-size:19px;color:var(--muted);border-top:1px dashed #3a4892;padding-top:8px}
+  .present{display:none;position:fixed;inset:0;z-index:50;background:rgba(8,12,30,.96);flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;gap:18px}
+  .present .pg{font-family:'Baloo 2';font-size:clamp(26px,4vw,40px);color:var(--c)}
+  .present .pr{font-family:'Baloo 2';font-size:clamp(32px,6vw,62px);line-height:1.25}
+  .present .pr .k{color:var(--b)} .present .pr .t{color:var(--ok)}
+  /* Tabs */
+  section{display:none;border-top:none}
+  section.active{display:block;animation:fadeIn .35s}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  nav a.on{background:var(--c);color:#1a1a1a}
+  .hero{padding:26px 0 6px}
+  .hero h1{font-size:clamp(34px,6vw,54px);margin:10px 0 4px}
+  .pager{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:30px;padding-top:18px;border-top:1px dashed #2c3874}
+  .pager .btn{font-size:22px;padding:12px 26px}
+  .pager .pos{color:var(--muted);font-weight:800;font-size:18px}
+  .pager .btn[disabled]{opacity:.3;cursor:default}
+  /* How AI learns */
+  .subh{font-size:32px;margin:26px 0 6px}
+  .muted{color:var(--muted);font-size:19px}
+  .pixwrap{display:flex;gap:18px;justify-content:center;align-items:center;flex-wrap:wrap;margin:14px 0}
+  .pixcol h4{font-family:'Baloo 2';font-size:22px;text-align:center;margin-bottom:6px}
+  .pixgrid,.numgrid{display:grid;grid-template-columns:repeat(8,34px);gap:3px;background:var(--bg2);padding:8px;border-radius:14px}
+  .pixgrid div{width:34px;height:34px;border-radius:5px;background:#2b3670;cursor:pointer}
+  .pixgrid div.on{background:var(--c)}
+  .numgrid div{width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-weight:800;font-size:20px;color:#6b78b8}
+  .numgrid div.on{color:var(--c)}
+  .pixarrow{font-size:46px;color:var(--a)}
+  .opt.feat{font-size:22px}
+  .opt.feat.sel{border-color:var(--a);background:#164e63}
+  .keyw{margin-top:18px;text-align:center;font-size:22px}
+  .keyw span{display:inline-block;background:var(--b);color:#1d0f44;font-weight:800;padding:4px 14px;border-radius:999px;margin:4px}
+  .trainwrap{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start}
+  .mail{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:10px;border-left:6px solid #3a4892}
+  .mail.S{border-color:var(--bad)} .mail.N{border-color:var(--ok)}
+  .mtext{font-size:22px;font-weight:700}
+  .mtext mark{background:none;color:var(--c);text-decoration:underline}
+  .mbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .mbtns .opt{font-size:18px;padding:6px 14px}
+  .mail .fb{font-size:18px;min-height:0;text-align:left;margin-top:6px}
+  .brain{background:linear-gradient(135deg,#312e81,#1e3a8a);border-radius:20px;padding:18px;position:sticky;top:120px}
+  .brain h3{font-size:26px;margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-weight:800;font-size:19px;padding:6px 12px;border-radius:999px}
+  .chip.pos{background:var(--bad);color:#3a0712} .chip.neg{background:var(--ok);color:#06281c} .chip.zero{background:#64748b;color:#fff}
+  .brain .chip{font-size:15px;padding:4px 9px}
+  .brain .chips{gap:6px}
+  .tstat{margin:12px 0;font-weight:800;color:var(--c);font-size:20px}
+  .rulebox{display:inline-block;margin-top:10px;background:var(--bg2);padding:8px 16px;border-radius:12px;font-family:'Baloo 2';font-size:26px}
+  .rulebox .k{color:var(--b)}
+  .tmail{background:var(--card);border-radius:16px;padding:16px;margin:10px 0}
+  .tmail .work{display:none;margin-top:10px;border-top:1px dashed #3a4892;padding-top:10px;font-size:21px}
+  .tmail .work .row2{margin:6px 0}
+  .tmail .verdict{font-weight:800;font-size:22px;margin-top:6px}
+  .mistake{border:3px solid var(--c)}
+  @media (max-width:760px){.trainwrap{grid-template-columns:1fr}.brain{position:static}.pixgrid,.numgrid{grid-template-columns:repeat(8,26px)}.pixgrid div,.numgrid div{width:26px;height:26px;font-size:15px}.pixarrow{transform:rotate(90deg)}}
+  .fcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:12px 0}
+  .fcard{background:var(--bg2);border:3px solid #3a4892;border-radius:18px;padding:14px;text-align:center;cursor:pointer;transition:.15s}
+  .fcard:hover,.fcard.on{border-color:var(--a);transform:translateY(-2px)}
+  .fcard .fe{font-size:38px}
+  .fcard h4{font-family:'Baloo 2';font-size:24px;color:var(--a)}
+  .fcard code{display:inline-block;font-size:20px;font-weight:800;color:var(--c);background:#0b1026;padding:6px 10px;border-radius:10px;margin:6px 0;line-height:1.35}
+  .fcard p{font-size:19px;color:var(--muted)}
+  .pixgrid div.hlf{box-shadow:0 0 0 3px var(--a),0 0 12px var(--a)}
+  .numgrid div.hlf{background:#0e7490;color:#fff;border-radius:5px}
+  /* Login + who */
+  .login{max-width:560px;margin:14px auto;display:grid;gap:10px}
+  .login label{font-family:'Baloo 2';font-weight:800;font-size:22px}
+  .login input,.login select{font-family:inherit;font-size:22px;padding:12px 14px;border-radius:12px;border:2px solid #3a4892;background:var(--bg2);color:var(--ink);width:100%}
+  .login input:focus,.login select:focus{outline:none;border-color:var(--a)}
+  .login input:disabled,.login select:disabled{opacity:.7}
+  .who{flex:0 0 auto;white-space:nowrap;font-weight:800;font-size:15px;color:#1a1a1a;background:var(--ok);padding:8px 14px;border-radius:999px}
+  .who:empty{display:none}
+  footer{text-align:center;color:var(--muted);padding:30px 0;font-size:16px}
+  @media (max-width:600px){body{font-size:20px}.card,.tag{font-size:20px}.tile{min-width:52px;height:52px;font-size:28px}.opt{font-size:22px}}
+@media (max-width:600px){nav .wrap{gap:6px;padding:8px}nav a{font-size:14px;padding:6px 10px}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a href="#home">🏠 Start</a>
+  <a href="#spot">🔥 Starter</a>
+  <a href="#lo">🎯 LO</a>
+  <a href="#what">🔍 Pattern</a>
+  <a href="#sees">👁️ AI Sees</a>
+  <a href="#train">🏷️ Train AI</a>
+  <a href="#test">🧪 Test AI</a>
+  <a href="#ai">🤖 AI Apps</a>
+  <a href="#decide">🚦 Decide</a>
+  <a href="#quiz">🏆 Plenary</a>
+  <a href="#hot">🔥 HOT</a>
+  <span class="who" id="whoTag"></span>
+</div></nav>
+
+<header class="hero wrap" id="start">
+  <span class="badge">AI MISSION • PATTERN RECOGNITION</span>
+  <h1>Pattern Detectives</h1>
+  <p>Think like an AI: spot the pattern 👀 → predict 🔮 → decide ✅</p>
+  <p style="margin-top:8px;font-size:18px">Simple Pattern Recognition &amp; Decision Making</p>
+</header>
+
+<!-- START / LOGIN -->
+<section id="home"><div class="wrap">
+  <span class="phase p-start">🏠 START</span>
+  <h2>👋 Welcome, Pattern Detective!</h2>
+  <div class="card login">
+    <label for="sname">Your full name</label>
+    <input id="sname" maxlength="40" placeholder="Type your name" autocomplete="off">
+    <label for="scls">Your class</label>
+    <select id="scls"><option value="">Select your class</option></select>
+    <button class="btn" id="goBtn">Let's begin ➜</button>
+    <button class="btn alt" id="newBtn" style="display:none">Not you? Start as a new student</button>
+    <div class="fb" id="startMsg"></div>
+  </div>
+  <p class="center muted">⭐ Your scores are saved for your teacher as you play.</p>
+</div></section>
+
+<!-- STARTER -->
+<section id="spot"><div class="wrap">
+  <span class="phase p-start">🔥 WARM-UP / STARTER</span>
+  <h2>🧩 Spot the Pattern</h2>
+  <p class="center">Your brain is a pattern detector! What comes next? <span class="score" id="spotScore">Score: 0 / 5</span></p>
+  <div id="spotList"></div>
+  <div class="center"><button class="btn" id="spotReset">↺ Play Again</button></div>
+  <div class="card center">🤔 <b>Think:</b> How did you find the answer so fast? <span class="hl">You found what repeats!</span><br>Today we learn how <b>AI</b> does the same.</div>
+</div></section>
+
+<!-- LO -->
+<section id="lo"><div class="wrap">
+  <span class="phase p-lo">🎯 LEARNING OBJECTIVE &amp; SUCCESS CRITERIA</span>
+  <h2>Today's Mission</h2>
+  <div class="losc">
+    <div class="lo-box">
+      <h3>🎯 Learning Objective</h3>
+      <p class="lo-line">I will be able to <b>define</b> pattern recognition in AI, <b>identify</b> patterns in data and daily routines, and <b>relate</b> them to real AI apps.</p>
+    </div>
+    <div class="sc-box">
+      <h3>✅ Success Criteria</h3>
+      <ul class="sc">
+        <li><span class="ck">☐</span><span>I can <b>analyse</b> a pattern to find its rule and what comes next.</span></li>
+        <li><span class="ck">☐</span><span>I can <b>examine</b> how AI turns a picture into numbers and features.</span></li>
+        <li><span class="ck">☐</span><span>I can <b>classify</b> examples to train a simple AI.</span></li>
+        <li><span class="ck">☐</span><span>I can <b>evaluate</b> how accurate an AI is and explain its mistakes.</span></li>
+        <li><span class="ck">☐</span><span>I can <b>create</b> a simple IF ➜ THEN rule for a smart device.</span></li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- WHAT -->
+<section id="what"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 1</span>
+  <h2>🔍 What is a Pattern?</h2>
+  <div class="card big center">A <span class="hl">pattern</span> is something that <span class="hl">repeats</span> in a regular way.</div>
+  <div class="row" style="margin:14px 0">
+    <div class="tile">🔴</div><div class="tile">🔵</div><div class="tile">🔴</div><div class="tile">🔵</div><div class="tile">🔴</div><div class="tile">🔵</div>
+  </div>
+  <div class="def">
+    <b>Pattern Recognition in AI</b><br>
+    is the ability of a computer to <em>find repeating features</em> in data,<br>
+    and use them to <em>predict</em> or <em>decide</em> something.
+  </div>
+  <div class="steps" style="margin-top:18px">
+    <div class="step"><div class="e">📥</div><h4>1. Collect</h4><p>AI gets lots of data</p></div>
+    <div class="step"><div class="e">🔍</div><h4>2. Find</h4><p>AI looks for repeats</p></div>
+    <div class="step"><div class="e">🔮</div><h4>3. Predict</h4><p>AI guesses what's next</p></div>
+    <div class="step"><div class="e">✅</div><h4>4. Decide</h4><p>AI takes an action</p></div>
+  </div>
+  <div class="tag t-cross"><span class="ti">➗</span><div><b>Cross-curricular: Maths</b>Number sequences like 2, 4, 6, 8 are patterns. Finding the rule (+2) is pattern recognition!</div></div>
+
+  <h3 style="font-size:32px;margin:26px 0 6px">🔢 Maths Pattern Challenge</h3>
+  <p class="center">Find the <b>rule</b>, then pick the next number! <span class="score" id="mathScore">Score: 0 / 8</span></p>
+  <div id="mathList"></div>
+  <div class="center"><button class="btn" id="mathReset">↺ Try Again</button></div>
+</div></section>
+
+<!-- AI SEES -->
+<section id="sees"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 2</span>
+  <h2>👁️ How Does AI See a Picture?</h2>
+  <div class="card big center">You see a picture. 🤖 AI sees only <span class="hl">NUMBERS!</span></div>
+  <p class="center">A picture is made of tiny squares called <b class="hl">pixels</b>. Filled = <b>1</b>, empty = <b>0</b>.<br>👆 Click the squares to draw your own picture!</p>
+  <div class="pixwrap">
+    <div class="pixcol"><h4>👀 What YOU see</h4><div class="pixgrid" id="pixGrid"></div></div>
+    <div class="pixarrow">➜</div>
+    <div class="pixcol"><h4>🤖 What AI sees</h4><div class="numgrid" id="numGrid"></div></div>
+  </div>
+  <div class="opts" id="pixBtns">
+    <button class="btn alt" data-pre="heart">❤️ Heart</button>
+    <button class="btn alt" data-pre="smile">😊 Smile</button>
+    <button class="btn alt" data-pre="seven">7️⃣ Number 7</button>
+    <button class="btn" data-pre="clear">✏️ Clear</button>
+  </div>
+  <div class="card center">🔍 AI then looks for <span class="hl">features</span> — clues hidden in the numbers, like lines, curves, colour and shape.<br>A <b>pattern of features</b> tells the AI what the picture is.</div>
+
+  <h3 class="subh">🧩 How AI Finds Features</h3>
+  <p class="center"><b>Feature = a pattern in the numbers.</b> 👆 Tap a card to see it on the grid above.</p>
+  <div class="fcards">
+    <div class="fcard" data-f="across"><div class="fe">➖</div><h4>Line across</h4><code>1 1 1 1 1 1 1</code><p>A long <b>row of 1s</b></p></div>
+    <div class="fcard" data-f="slant"><div class="fe">↙️</div><h4>Slanting line</h4><code>0 0 0 0 1 1<br>0 0 0 1 1 0<br>0 0 1 1 0 0</code><p>1s <b>step sideways</b> in each row</p></div>
+    <div class="fcard" data-f="stand"><div class="fe">⬇️</div><h4>Standing line</h4><code>1<br>1<br>1</code><p>1s <b>straight down</b> one column</p></div>
+    <div class="fcard" data-f="curve"><div class="fe">🌙</div><h4>Curve</h4><code>1 0 0 1<br>0 1 1 0</code><p>1s <b>bend</b> round</p></div>
+  </div>
+  <div class="card center big">➖ Line across + ↙️ Slanting line ➜ 🤖 “It's a <span class="hl">7</span>!”</div>
+  <div class="card">
+    <p class="center big">🤔 AI finds a <b>round curve</b> and <b>no straight lines</b>. Which number could it be?</p>
+    <div class="opts" id="featQ">
+      <button class="opt" data-a="1">0</button>
+      <button class="opt" data-a="0">1</button>
+      <button class="opt" data-a="0">7</button>
+    </div>
+    <div class="fb" id="featQFb"></div>
+  </div>
+  <div class="card center" style="font-size:21px">🎨 <b>What about colour?</b> Each coloured pixel is 3 numbers: <b style="color:#f87171">Red</b>, <b style="color:#4ade80">Green</b>, <b style="color:#60a5fa">Blue</b>.<br>🟥 Red = 255, 0, 0 &nbsp;&nbsp; 🟨 Yellow = 255, 255, 0 &nbsp;➜ high Red + high Green tells AI “yellow, like a banana!”</div>
+
+  <h3 class="subh">🍎 or 🍌? Choose the Useful Features</h3>
+  <p class="center">Which clues help AI tell an <b>apple</b> from a <b>banana</b>? Tap <b>ALL</b> the useful features, then check.</p>
+  <div class="opts" id="featOpts">
+    <button class="opt feat" data-u="1">🎨 Colour</button>
+    <button class="opt feat" data-u="1">⚪ Shape</button>
+    <button class="opt feat" data-u="1">📏 Length</button>
+    <button class="opt feat" data-u="0">🏷️ Price sticker</button>
+    <button class="opt feat" data-u="0">🛒 Shop it came from</button>
+  </div>
+  <div class="center" style="margin-top:12px"><button class="btn" id="featCheck">✅ Check</button> <button class="btn alt" id="featReset">↺</button></div>
+  <div class="fb" id="featFb"></div>
+  <div class="keyw">🔑 <b>New words:</b> <span>Pixel</span> <span>Feature</span></div>
+</div></section>
+
+<!-- TRAIN -->
+<section id="train"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 3</span>
+  <h2>🏷️ Train Your Own AI: Spam Detector</h2>
+  <div class="card center">AI is not born smart. It <span class="hl">learns from examples</span> that already have the correct answer.<br>These examples are called <b class="hl">training data</b>. 🧑‍🏫 Today, <b>YOU</b> are the AI's teacher!</div>
+  <div class="steps" style="margin:14px 0">
+    <div class="step"><div class="e">🏷️</div><h4>1. Label</h4><p>You mark each email Spam or Not Spam</p></div>
+    <div class="step"><div class="e">🔢</div><h4>2. Count</h4><p>Every word in a spam email ➜ +1<br>Every word in a normal email ➜ −1</p></div>
+    <div class="step"><div class="e">🧠</div><h4>3. Learn</h4><p>AI adds up and remembers the points for every word</p></div>
+  </div>
+  <div class="trainwrap">
+    <div id="trainList"></div>
+    <div class="brain">
+      <h3>🧠 AI Brain: Word Points</h3>
+      <div id="brain"><p class="muted">Empty… label an email to teach me!</p></div>
+      <div id="trainStatus" class="tstat">Labelled: 0 / 6</div>
+      <button class="btn alt" id="trainReset" style="font-size:17px;padding:8px 14px">↺ Train Again</button>
+    </div>
+  </div>
+  <div class="keyw">🔑 <b>New words:</b> <span>Training data</span> <span>Label</span></div>
+</div></section>
+
+<!-- TEST -->
+<section id="test"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 4</span>
+  <h2>🧪 Test Your AI</h2>
+  <div class="card center">Now the AI checks <span class="hl">NEW emails</span> it has never seen. It <b>adds the points</b> of the words it learned:<br>
+    <span class="rulebox"><span class="k">IF</span> total &gt; 0 ➜ 🚫 Spam &nbsp;&nbsp; <span class="k">ELSE</span> ➜ ✅ Not Spam</span></div>
+  <div id="testList"></div>
+  <div class="card center big" id="accBox">🎯 AI Accuracy: test all 5 emails!</div>
+  <div class="card mistake" id="mistakeBox" style="display:none">
+    <b>🤔 Why did the AI get Email 5 wrong?</b><br>
+    During training, <b>FREE</b> (+2) and <b>CLICK</b> (+2) appeared <b>only in spam</b>. The normal words TEACHER (−1) and MATHS (−1) were not strong enough, so the total was +2 ➜ Spam — even though it is from your teacher!<br>
+    ✅ <b>Fix:</b> give the AI <b>more and different</b> training examples. Real spam filters learn from <b>millions</b> of emails.
+  </div>
+  <div class="tag t-cross"><span class="ti">➗</span><div><b>Cross-curricular: Maths</b>The AI adds positive and negative numbers (integers) to decide, and accuracy is a percentage: 4 out of 5 = 80%.</div></div>
+  <div class="tag t-uae"><span class="ti">🇦🇪</span><div><b>UAE Connect</b>More data = smarter AI. 🌦️ The <b style="display:inline;font-size:23px;font-family:inherit">UAE National Centre of Meteorology (NCM)</b> studies years of weather data to find patterns and <b style="display:inline;font-size:23px;font-family:inherit">predict</b> rain, fog and dust storms.</div></div>
+  <div class="tag t-moral"><span class="ti">📵</span><div><b>Moral Value: Responsibility Online</b>Never forward spam or scam messages. Report them and tell a trusted adult.</div></div>
+  <div class="keyw">🔑 <b>New words:</b> <span>Testing</span> <span>Accuracy</span></div>
+</div></section>
+
+<!-- AI APPS -->
+<section id="ai"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 5</span>
+  <h2>🤖 Pattern Recognition in Real AI Apps</h2>
+  <p class="center">Each app was <b class="hl">trained on millions of examples</b> — just like your spam detector! 👆 Tap a card to see the pattern it finds.</p>
+  <div class="apps" style="margin-top:14px">
+    <div class="app"><div class="inner"><div class="face front"><div class="e">📱</div><h3>Face Unlock</h3><small>tap to flip</small></div><div class="face back">Finds the pattern of <b>your face</b> — eyes, nose, shape — to unlock the phone.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">▶️</div><h3>Video Suggestions</h3><small>tap to flip</small></div><div class="face back">Notices the <b>kind of videos you watch</b> and recommends similar ones.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">📧</div><h3>Spam Filter</h3><small>tap to flip</small></div><div class="face back">Spots <b>words and links</b> often found in fake emails and blocks them.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">⌨️</div><h3>Autocorrect</h3><small>tap to flip</small></div><div class="face back">Spots <b>spelling mistakes</b> by comparing with common word patterns and fixes them.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">🔎</div><h3>Autocomplete</h3><small>tap to flip</small></div><div class="face back">Learns <b>what people often type or search</b> and finishes your word or sentence for you.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">🗺️</div><h3>Maps Traffic</h3><small>tap to flip</small></div><div class="face back">Finds <b>busy-road patterns</b> at certain times and suggests a faster route.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">📲</div><h3>App Suggestions</h3><small>tap to flip</small></div><div class="face back">Learns <b>which app you open at the same time</b> every day (e.g. the Clock app at night for your 5:00 AM alarm) and shows it on your home screen.</div></div></div>
+    <div class="app"><div class="inner"><div class="face front"><div class="e">🗣️</div><h3>Voice Assistant</h3><small>tap to flip</small></div><div class="face back">Recognises <b>sound patterns</b> in your voice to understand words.</div></div></div>
+  </div>
+  <div class="tag t-uae"><span class="ti">🇦🇪</span><div><b>UAE Connect: AI in our country</b>✈️ <b style="display:inline;font-size:23px;font-family:inherit">Smart Gates</b> at UAE airports recognise your face to let you pass.<br>📱 <b style="display:inline;font-size:23px;font-family:inherit">UAE PASS</b> app can verify you by your face.<br>🏛️ In 2017, the UAE became the first country to appoint a <b style="display:inline;font-size:23px;font-family:inherit">Minister for Artificial Intelligence</b>.</div></div>
+</div></section>
+
+<!-- DECIDE -->
+<section id="decide"><div class="wrap">
+  <span class="phase p-main">📘 MAIN ACTIVITY • PART 6</span>
+  <h2>🚦 Making Decisions from Observations</h2>
+  <p>After spotting a pattern, AI follows a rule: <b style="color:var(--b)">IF</b> this happens ➜ <b style="color:var(--ok)">THEN</b> do that.</p>
+  <div class="steps" style="margin:14px 0">
+    <div class="step"><div class="e">👀</div><h4>Observe</h4><p>Dark clouds</p></div>
+    <div class="step"><div class="e">🧠</div><h4>Pattern</h4><p>Dark clouds often bring rain</p></div>
+    <div class="step"><div class="e">✅</div><h4>Decide</h4><p>Take an umbrella ☂️</p></div>
+  </div>
+  <div class="card">
+    <div class="center" style="color:var(--muted);font-weight:800" id="decNum">Situation 1 of 4</div>
+    <div class="scene" id="decScene"></div>
+    <div class="opts" id="decOpts"></div>
+    <div class="fb" id="decFb"></div>
+    <div class="ifthen" id="decRule" style="display:none"></div>
+    <div class="center" style="margin-top:10px"><button class="btn alt" id="decNext" style="display:none">Next Situation ➜</button></div>
+  </div>
+  <!-- INDIVIDUAL TASK -->
+  <div class="grp-head">
+    <h3>✍️ Your Turn: Design a Smart Rule</h3>
+    <p>Choose <b>any ONE task</b>. Observe ➜ Find the pattern ➜ Write an <b style="color:var(--b)">IF</b> ➜ <b style="color:var(--ok)">THEN</b> rule ➜ Share with the class.</p>
+  </div>
+  <div class="rules" id="rules"></div>
+  <div class="present" id="present"><div class="pg" id="pg"></div><div class="pr" id="pr"></div><button class="btn" onclick="document.getElementById('present').style.display='none'">✖ Close</button></div>
+
+  <div class="tag t-moral"><span class="ti">🛡️</span><div><b>Moral Value: Think Before You Act</b>Good decisions come from careful observation. Never click unknown links or believe "free prize" messages — stay safe and honest online.</div></div>
+</div></section>
+
+<!-- QUIZ -->
+<section id="quiz"><div class="wrap">
+  <span class="phase p-plen">🏆 PLENARY</span>
+  <h2>🏆 Detective Quiz</h2>
+  <div class="card">
+    <div class="center" style="color:var(--muted);font-weight:800" id="qzNum"></div>
+    <p class="center big" id="qzQ" style="margin-top:8px"></p>
+    <div class="opts" id="qzOpts"></div>
+    <div class="fb" id="qzFb"></div>
+    <div class="center"><button class="btn" id="qzNext" style="display:none">Next ➜</button></div>
+  </div>
+  <div class="cert" id="cert">
+    <div style="font-size:70px">🕵️‍♂️🏅</div>
+    <h2>Certified Pattern Detective!</h2>
+    <p class="big" id="certScore"></p>
+    <p>You can spot patterns, predict, and decide — just like AI!</p>
+    <button class="btn" style="margin-top:14px" onclick="startQuiz()">↺ Try Again</button>
+  </div>
+
+  <h3 style="font-size:32px;margin:30px 0 12px">📝 Quick Recap</h3>
+  <div class="recap">
+    <div class="card"><b>Pattern Recognition</b><br>AI finding repeats in data to predict or decide.</div>
+    <div class="card"><b>Pixel &amp; Feature</b><br>AI sees pictures as numbers and looks for clues.</div>
+    <div class="card"><b>Training Data</b><br>Labelled examples that teach the AI.</div>
+    <div class="card"><b>Testing &amp; Accuracy</b><br>Checking AI on new data — how often is it right?</div>
+    <div class="card"><b>Decision</b><br>IF (observation) ➜ THEN (action).</div>
+  </div>
+</div></section>
+
+<!-- HOT -->
+<section id="hot"><div class="wrap">
+  <span class="phase p-hot">🔥 HOT QUESTIONS</span>
+  <h2>Higher Order Thinking</h2>
+  <div class="hotq"><div class="qq">1. An AI learned juice sales only from summer days. What mistake might it make in winter? Why?</div></div>
+  <div class="hotq"><div class="qq">2. Face Unlock works well for you but not for your twin. Why could it get confused?</div></div>
+  <div class="hotq"><div class="qq">3. Design your own IF ➜ THEN rule for a smart school bag or smart classroom.</div></div>
+</div></section>
+
+<footer>Pattern Detectives • AI Lesson • Sharjah Indian School</footer>
+
+<script>
+/* ---------- Student login + saving scores to Google Sheet ---------- */
+/* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
+const SCORE_URL = '';
+const SKEY='pd_student', MAXT=33;
+let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
+try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
+function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
+const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+S.decide+S.quiz;
+function showWho(){document.getElementById('whoTag').textContent=ME?`👤 ${ME.name} · ${ME.cls} · ⭐ ${totalScore()}/${MAXT}`:''}
+function rec(k,v){
+  if(!ME)return;
+  if(typeof v==='number')S[k]=Math.max(S[k]||0,v);else S[k]=v;
+  persist();showWho();clearTimeout(sendT);sendT=setTimeout(()=>sendScore(k),1200);
+}
+function sendScore(what){
+  if(!SCORE_URL||!ME)return;
+  seq++;persist();
+  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what};
+  fetch(SCORE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).catch(()=>{});
+}
+function rand(a){return a.slice().sort(()=>Math.random()-.5)}
+function lock(box){box.querySelectorAll('.opt').forEach(b=>b.disabled=true)}
+
+/* ---------- Spot the pattern ---------- */
+const spots=[
+  {s:['🔺','⭕','🔺','⭕','🔺'],o:['⭕','🔺','⬛'],a:'⭕',why:'Triangle, circle repeats!'},
+  {s:['2','4','6','8'],o:['9','10','12'],a:'10',why:'Add 2 each time.'},
+  {s:['🍎','🍎','🍌','🍎','🍎'],o:['🍎','🍌','🍇'],a:'🍌',why:'Two apples, one banana.'},
+  {s:['5','10','15','20'],o:['22','25','30'],a:'25',why:'Add 5 each time.'},
+  {s:['🌑','🌓','🌕','🌑','🌓'],o:['🌑','🌕','🌓'],a:'🌕',why:'New → half → full moon repeats.'}
+];
+let ss=0;
+function showSpot(){
+  ss=0;document.getElementById('spotScore').textContent=`Score: 0 / ${spots.length}`;
+  const list=document.getElementById('spotList');
+  list.innerHTML=spots.map((p,i)=>`<div class="card">
+    <div class="center" style="color:var(--c);font-weight:800">Puzzle ${i+1}</div>
+    <div class="row" style="margin-top:8px">${p.s.map(x=>`<div class="tile">${x}</div>`).join('')}<div class="tile q">?</div></div>
+    <div class="opts">${rand(p.o).map(x=>`<button class="opt">${x}</button>`).join('')}</div>
+    <div class="fb"></div></div>`).join('');
+  list.querySelectorAll('.card').forEach((c,i)=>{
+    const p=spots[i],box=c.querySelector('.opts'),fb=c.querySelector('.fb');
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      lock(box);
+      if(b.textContent===p.a){b.classList.add('right');ss++;fb.textContent='✅ Correct! '+p.why;fb.style.color='var(--ok)'}
+      else{b.classList.add('wrong');box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===p.a)x.classList.add('right')});fb.textContent='❌ Not quite. '+p.why;fb.style.color='var(--bad)'}
+      document.getElementById('spotScore').textContent=`Score: ${ss} / ${spots.length}`;
+      rec('starter',ss);
+    });
+  });
+}
+document.getElementById('spotReset').onclick=showSpot;
+showSpot();
+
+/* ---------- Maths Pattern Challenge ---------- */
+const maths=[
+  {s:['7','14','21','28'],o:['30','35','36'],a:'35',why:'Rule: +7 (table of 7).'},
+  {s:['100','90','80','70'],o:['60','65','50'],a:'60',why:'Rule: −10 each time.'},
+  {s:['3','6','12','24'],o:['30','36','48'],a:'48',why:'Rule: ×2 (double it).'},
+  {s:['81','27','9','3'],o:['0','1','2'],a:'1',why:'Rule: ÷3 each time.'},
+  {s:['1','4','9','16'],o:['20','25','32'],a:'25',why:'Square numbers: 1×1, 2×2, 3×3, 4×4, 5×5.'},
+  {s:['2','5','10','17'],o:['24','26','28'],a:'26',why:'Add 3, 5, 7, then 9 (odd numbers).'},
+  {s:['1','3','6','10'],o:['14','15','16'],a:'15',why:'Add 2, 3, 4, then 5 (triangular numbers).'},
+  {s:['1','1','2','3','5','8'],o:['11','12','13'],a:'13',why:'Add the two numbers before it: 5 + 8 = 13.'}
+];
+let ms=0;
+function showMaths(){
+  ms=0;document.getElementById('mathScore').textContent=`Score: 0 / ${maths.length}`;
+  const list=document.getElementById('mathList');
+  list.innerHTML=maths.map((p,i)=>`<div class="card">
+    <div class="center" style="color:var(--c);font-weight:800">Q${i+1}${i>=4?' ⭐ Challenge':''}</div>
+    <div class="row" style="margin-top:8px">${p.s.map(x=>`<div class="tile">${x}</div>`).join('')}<div class="tile q">?</div></div>
+    <div class="opts">${rand(p.o).map(x=>`<button class="opt">${x}</button>`).join('')}</div>
+    <div class="fb"></div></div>`).join('');
+  list.querySelectorAll('.card').forEach((c,i)=>{
+    const p=maths[i],box=c.querySelector('.opts'),fb=c.querySelector('.fb');
+    box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      lock(box);
+      if(b.textContent===p.a){b.classList.add('right');ms++;fb.textContent='✅ Correct! '+p.why;fb.style.color='var(--ok)'}
+      else{b.classList.add('wrong');box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===p.a)x.classList.add('right')});fb.textContent='❌ Not quite. '+p.why;fb.style.color='var(--bad)'}
+      document.getElementById('mathScore').textContent=`Score: ${ms} / ${maths.length}`;
+      rec('maths',ms);
+    });
+  });
+}
+document.getElementById('mathReset').onclick=showMaths;
+showMaths();
+
+/* ---------- Single question helpers ---------- */
+function single(id,fbId,ok,no){
+  const box=document.getElementById(id);
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    lock(box);const fb=document.getElementById(fbId);
+    if(b.dataset.a==='1'){b.classList.add('right');fb.textContent=ok;fb.style.color='var(--ok)'}
+    else{b.classList.add('wrong');box.querySelector('[data-a="1"]').classList.add('right');fb.textContent=no;fb.style.color='var(--bad)'}
+  });
+}
+
+/* ---------- AI flip cards ---------- */
+document.querySelectorAll('.app').forEach(c=>c.onclick=()=>c.classList.toggle('flip'));
+
+/* ---------- Decisions ---------- */
+const decs=[
+  {e:'🚦',s:'The traffic light turns RED.',o:['Stop','Keep going'],a:'Stop',r:'IF light is red ➜ THEN stop'},
+  {e:'🔋',s:'Your tablet battery shows 5%.',o:['Play a long game','Charge it'],a:'Charge it',r:'IF battery is low ➜ THEN charge'},
+  {e:'🌡️',s:'A smart AC senses the room is 32°C.',o:['Turn cooling ON','Turn cooling OFF'],a:'Turn cooling ON',r:'IF room is hot ➜ THEN cool it'},
+  {e:'📧',s:'An email says "You WON a FREE iPhone! Click now!!!"',o:['Click the link','Mark as spam'],a:'Mark as spam',r:'IF email looks like a scam pattern ➜ THEN block it'}
+];
+let di=0;const decOk=new Set();
+function showDec(){
+  const d=decs[di];
+  document.getElementById('decNum').textContent=`Situation ${di+1} of ${decs.length}`;
+  document.getElementById('decScene').innerHTML=`<span class="e">${d.e}</span>${d.s}`;
+  const box=document.getElementById('decOpts');
+  box.innerHTML=rand(d.o).map(x=>`<button class="opt">${x}</button>`).join('');
+  ['decFb'].forEach(i=>document.getElementById(i).textContent='');
+  document.getElementById('decRule').style.display='none';
+  document.getElementById('decNext').style.display='none';
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    lock(box);const fb=document.getElementById('decFb');
+    if(b.textContent===d.a){b.classList.add('right');decOk.add(di);rec('decide',decOk.size);fb.textContent='✅ Smart decision!';fb.style.color='var(--ok)'}
+    else{b.classList.add('wrong');box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===d.a)x.classList.add('right')});fb.textContent='❌ Think about what you observed.';fb.style.color='var(--bad)'}
+    const [k,t]=d.r.split('➜');
+    const r=document.getElementById('decRule');
+    r.innerHTML=`<span class="k">${k}</span>➜ <span class="t">${t}</span>`;r.style.display='block';
+    const nx=document.getElementById('decNext');nx.style.display='inline-block';
+    nx.textContent= di<decs.length-1 ? 'Next Situation ➜' : '↺ Start Again';
+  });
+}
+document.getElementById('decNext').onclick=()=>{di=(di+1)%decs.length;showDec()};
+showDec();
+
+/* ---------- Individual: Design a Smart Rule ---------- */
+const sc=[
+  {e:'🚇',s:'Dubai Metro platform is very crowded at 8 AM every day.',x:'IF the platform is crowded at rush hour ➜ THEN run trains more often'},
+  {e:'🏠',s:'Smart home camera sees nobody in the room.',x:'IF no one is in the room ➜ THEN switch off lights and AC'},
+  {e:'🌴',s:'Sharjah park garden sensor finds the soil is dry.',x:'IF the soil is dry ➜ THEN turn on the sprinklers'}
+];
+document.getElementById('rules').innerHTML=sc.map((c,i)=>`<div class="rule">
+  <div class="gn">TASK ${i+1}</div><div class="se">${c.e}</div><div class="st">${c.s}</div>
+  <label class="lif">IF…</label><input id="if${i}" placeholder="what the AI observes">
+  <label class="lth">THEN…</label><input id="th${i}" placeholder="the decision / action">
+  <div class="acts"><button class="btn" onclick="presentRule(${i})">📢 Show My Rule</button><button class="btn alt" onclick="toggleEx(this)">💡 Example</button></div>
+  <div class="ex">${c.x}</div></div>`).join('');
+function toggleEx(b){const e=b.parentElement.nextElementSibling;const s=e.style.display!=='block';e.style.display=s?'block':'none';b.textContent=s?'🙈 Hide':'💡 Example'}
+function esc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function presentRule(i){
+  const f=document.getElementById('if'+i).value.trim(),t=document.getElementById('th'+i).value.trim();
+  if(!f||!t){alert('Please fill both IF and THEN boxes first.');return}
+  rec('rule',`Task ${i+1}: IF ${f} THEN ${t}`);
+  document.getElementById('pg').textContent=`Task ${i+1}  ${sc[i].e}`;
+  document.getElementById('pr').innerHTML=`<span class="k">IF</span> ${esc(f)}<br>➜ <span class="t">THEN</span> ${esc(t)}`;
+  document.getElementById('present').style.display='flex';
+}
+
+
+/* ---------- AI Sees: pixels ---------- */
+const PRE={
+ heart:['01100110','11111111','11111111','11111111','01111110','00111100','00011000','00000000'],
+ smile:['00111100','01000010','10100101','10000001','10100101','10011001','01000010','00111100'],
+ seven:['11111110','00000110','00001100','00011000','00110000','00110000','00110000','00000000'],
+ clear:Array(8).fill('00000000')};
+PRE.one=['00011000','00111000','00011000','00011000','00011000','00011000','00111100','00000000'];
+let pix=[],HL=new Set();
+function drawPix(){
+  document.getElementById('pixGrid').innerHTML=pix.map((v,i)=>`<div class="${v?'on':''} ${HL.has(i)?'hlf':''}" data-i="${i}"></div>`).join('');
+  document.getElementById('numGrid').innerHTML=pix.map((v,i)=>`<div class="${v?'on':''} ${HL.has(i)?'hlf':''}">${v}</div>`).join('');
+  document.querySelectorAll('#pixGrid div').forEach(d=>d.onclick=()=>{pix[+d.dataset.i]^=1;HL=new Set();clearF();drawPix()});
+}
+function loadPix(k,hl){pix=PRE[k].join('').split('').map(Number);HL=new Set(hl||[]);drawPix()}
+const cell=(r,c)=>r*8+c;
+const FEAT={
+  across:['seven',[0,1,2,3,4,5,6].map(c=>cell(0,c))],
+  slant:['seven',[[1,5],[1,6],[2,4],[2,5],[3,3],[3,4],[4,2],[4,3]].map(([r,c])=>cell(r,c))],
+  stand:['one',[0,1,2,3,4,5,6].flatMap(r=>[cell(r,3),cell(r,4)])],
+  curve:['smile',[[4,2],[4,5],[5,3],[5,4]].map(([r,c])=>cell(r,c))]};
+function clearF(){document.querySelectorAll('.fcard').forEach(x=>x.classList.remove('on'))}
+document.querySelectorAll('.fcard').forEach(f=>f.onclick=()=>{
+  clearF();f.classList.add('on');const [k,h]=FEAT[f.dataset.f];loadPix(k,h);
+  document.getElementById('pixGrid').scrollIntoView({behavior:'smooth',block:'center'});
+});
+document.querySelectorAll('#pixBtns .btn').forEach(b=>b.onclick=()=>{clearF();loadPix(b.dataset.pre)});
+document.querySelectorAll('#featQ .opt').forEach(b=>b.addEventListener('click',()=>rec('featq',b.dataset.a==='1'?1:0)));
+single('featQ','featQFb','✅ Yes! A round curve with no straight lines is a 0.','❌ 1 and 7 have straight lines. A round curve with no lines is 0.');
+loadPix('heart');
+
+/* ---------- Features ---------- */
+document.querySelectorAll('#featOpts .feat').forEach(b=>b.onclick=()=>{if(!b.disabled)b.classList.toggle('sel')});
+document.getElementById('featCheck').onclick=()=>{
+  const bs=[...document.querySelectorAll('#featOpts .feat')];
+  const ok=bs.every(b=>b.classList.contains('sel')===(b.dataset.u==='1'));
+  bs.forEach(b=>{b.disabled=true;b.classList.remove('sel');b.classList.add(b.dataset.u==='1'?'right':'wrong')});
+  const fb=document.getElementById('featFb');
+  fb.textContent=(ok?'✅ Perfect! ':'❌ Not quite. ')+'Colour, shape and length are different for an apple and a banana. Price and shop do NOT tell what the fruit is — AI must choose features that really matter!';
+  fb.style.color=ok?'var(--ok)':'var(--bad)';
+  rec('features',ok?1:0);
+};
+document.getElementById('featReset').onclick=()=>{document.querySelectorAll('#featOpts .feat').forEach(b=>{b.disabled=false;b.className='opt feat'});document.getElementById('featFb').textContent=''};
+
+/* ---------- Train & Test: Spam detector ---------- */
+const TRAIN=[
+  {t:'WIN a FREE iPhone! CLICK now!',l:'S'},
+  {t:'Mom: Please bring bread on your way home.',l:'N'},
+  {t:'URGENT! Claim your PRIZE now!',l:'S'},
+  {t:'Teacher: Submit your science project tomorrow.',l:'N'},
+  {t:'You WIN! Click to get your FREE prize!',l:'S'},
+  {t:'Ali: Can you help me with my maths homework?',l:'N'}];
+const TEST=[
+  {t:'Click now to WIN a free bike!',l:'S'},
+  {t:'Mom: Dinner is ready, come home soon.',l:'N'},
+  {t:'URGENT! Your gift is waiting. Claim now!',l:'S'},
+  {t:'Teacher: Science test tomorrow. Revise chapter 3.',l:'N'},
+  {t:'Teacher: FREE extra maths class. Click the link in Google Classroom.',l:'N'}];
+const words=t=>[...new Set(t.toLowerCase().match(/[a-z]+/g)||[])];
+const hiTxt=(t,known)=>t.replace(/[A-Za-z]+/g,w=>(known?known[w.toLowerCase()]:0)?`<mark>${w}</mark>`:w);
+const FINAL={};TRAIN.forEach(e=>words(e.t).forEach(w=>FINAL[w]=(FINAL[w]||0)+(e.l==='S'?1:-1)));
+let W={},done=0;
+const sgn=n=>n>0?'+'+n:''+n;
+function chipHTML(obj){
+  const ks=Object.keys(obj).sort((a,b)=>obj[b]-obj[a]);
+  return ks.length?`<div class="chips">${ks.map(k=>`<span class="chip ${obj[k]>0?'pos':obj[k]<0?'neg':'zero'}">${k.toUpperCase()} ${sgn(obj[k])}</span>`).join('')}</div>`:'<p class="muted">Empty… label an email to teach me!</p>';
+}
+function renderBrain(){
+  document.getElementById('brain').innerHTML=chipHTML(W);
+  const st=document.getElementById('trainStatus');
+  st.innerHTML= done<TRAIN.length?`Labelled: ${done} / ${TRAIN.length}`:`🎉 Training complete!<br><span style="color:var(--ink);font-size:18px">Red words ➜ Spam &nbsp; Green words ➜ Not Spam.<br>⚪ Grey words (YOUR, YOU) = 0 — they appear in BOTH spam and normal emails, so they don't help AI decide.<br>Now go to 🧪 Test AI!</span>`;
+}
+let trainOk=0;
+function startTrain(){
+  W={};done=0;trainOk=0;
+  document.getElementById('trainList').innerHTML=TRAIN.map((e,i)=>`<div class="mail" id="m${i}">
+    <div class="mtext">📩 ${e.t}</div>
+    <div class="mbtns"><button class="opt" data-l="S">🚫 Spam</button><button class="opt" data-l="N">✅ Not Spam</button></div>
+    <div class="fb"></div></div>`).join('');
+  TRAIN.forEach((e,i)=>{
+    const m=document.getElementById('m'+i),fb=m.querySelector('.fb');let first=true;
+    m.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+      if(b.dataset.l!==e.l){first=false;fb.textContent='❌ Think again! Who would really send this?';fb.style.color='var(--bad)';return}
+      lock(m);b.classList.add('right');m.classList.add(e.l);
+            const ws=words(e.t);ws.forEach(w=>W[w]=(W[w]||0)+(e.l==='S'?1:-1));
+      fb.innerHTML=`✅ Labelled! AI learned <b>${ws.length} words</b>, each ${e.l==='S'?'<b>+1</b> (spam)':'<b>−1</b> (not spam)'}`;fb.style.color='var(--ok)';
+      if(first){trainOk++;rec('train',trainOk)}
+      done++;renderBrain();
+    });
+  });
+  renderBrain();
+}
+document.getElementById('trainReset').onclick=startTrain;
+startTrain();
+
+let tested=0,right=0;
+function startTest(){
+  tested=0;right=0;
+  document.getElementById('accBox').textContent='🎯 AI Accuracy: test all 5 emails!';
+  document.getElementById('mistakeBox').style.display='none';
+  document.getElementById('testList').innerHTML=TEST.map((e,i)=>`<div class="tmail" id="t${i}">
+    <div class="mtext">📩 Email ${i+1}: ${e.t}</div>
+    <div style="margin-top:8px"><button class="btn" style="font-size:18px;padding:8px 16px">🤖 Ask the AI</button></div>
+    <div class="work"></div></div>`).join('');
+  TEST.forEach((e,i)=>{
+    const c=document.getElementById('t'+i),btn=c.querySelector('.btn'),wk=c.querySelector('.work');
+    btn.onclick=()=>{
+      btn.disabled=true;btn.style.opacity=.4;
+      c.querySelector('.mtext').innerHTML=`📩 Email ${i+1}: `+hiTxt(e.t,FINAL);
+      const ws=words(e.t).filter(w=>w in FINAL&&FINAL[w]!==0),tot=ws.reduce((a,w)=>a+(FINAL[w]||0),0),ai=tot>0?'S':'N',ok=ai===e.l;
+      tested++;if(ok)right++;
+      wk.innerHTML=`<div class="row2">🔢 Words AI knows: ${chipHTML(Object.fromEntries(ws.map(w=>[w,FINAL[w]])))}</div>
+        <div class="row2">➕ Total = ${ws.map(w=>sgn(FINAL[w])).join(' ')} = <b class="hl">${sgn(tot)}</b></div>
+        <div class="row2">🤖 AI says: <b>${ai==='S'?'🚫 Spam':'✅ Not Spam'}</b> &nbsp;|&nbsp; Real answer: <b>${e.l==='S'?'🚫 Spam':'✅ Not Spam'}</b></div>
+        <div class="verdict" style="color:${ok?'var(--ok)':'var(--bad)'}">${ok?'✅ AI is correct!':'❌ AI made a MISTAKE!'}</div>`;
+      wk.style.display='block';
+      const acc=document.getElementById('accBox');
+      acc.innerHTML= tested<TEST.length?`🎯 AI Accuracy so far: ${right} / ${tested} correct`:`🎯 AI Accuracy: <span class="hl">${right} out of ${TEST.length} = ${Math.round(right/TEST.length*100)}%</span>`;
+      if(!ok)document.getElementById('mistakeBox').style.display='block';
+    };
+  });
+}
+startTest();
+
+/* ---------- Quiz ---------- */
+const qz=[
+  {q:'A pattern is something that…',o:['Repeats in a regular way','Happens only once','Is always a number'],a:0},
+  {q:'Pattern recognition in AI means…',o:['Finding repeats in data to predict or decide','Drawing colourful shapes','Typing fast on a keyboard'],a:0},
+  {q:'To an AI, a picture is…',o:['A grid of numbers (pixels)','A painting','A sound'],a:0},
+  {q:'Colour, shape and length are examples of…',o:['Passwords','Features','Apps'],a:1},
+  {q:'Labelled examples that teach an AI are called…',o:['Homework','Spam','Training data'],a:2},
+  {q:'An AI tested 10 emails and got 8 right. Its accuracy is…',o:['8%','80%','10%'],a:1},
+  {q:'Why did our AI mark the teacher\'s "FREE maths class" email as spam?',o:['It saw FREE only in spam emails during training','The teacher sent spam','The AI was switched off'],a:0},
+  {q:'"IF the floor is wet ➜ THEN ___"',o:['Run fast','Walk carefully','Close your eyes'],a:1}
+];
+let qi=0,qs=0,order=[];
+function startQuiz(){order=rand(qz);qi=0;qs=0;document.getElementById('cert').style.display='none';document.querySelector('#quiz .card').style.display='block';showQ()}
+function showQ(){
+  const d=order[qi];
+  document.getElementById('qzNum').textContent=`Question ${qi+1} of ${order.length}  •  Score: ${qs}`;
+  document.getElementById('qzQ').textContent=d.q;
+  const box=document.getElementById('qzOpts');
+  box.innerHTML=d.o.map((x,i)=>`<button class="opt" style="font-size:20px" data-i="${i}">${x}</button>`).join('');
+  document.getElementById('qzFb').textContent='';document.getElementById('qzNext').style.display='none';
+  box.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    lock(box);const fb=document.getElementById('qzFb');
+    if(+b.dataset.i===d.a){b.classList.add('right');qs++;fb.textContent='✅ Correct!';fb.style.color='var(--ok)'}
+    else{b.classList.add('wrong');box.querySelector(`[data-i="${d.a}"]`).classList.add('right');fb.textContent='❌ Oops!';fb.style.color='var(--bad)'}
+    document.getElementById('qzNum').textContent=`Question ${qi+1} of ${order.length}  •  Score: ${qs}`;
+    rec('quiz',qs);
+    document.getElementById('qzNext').style.display='inline-block';
+  });
+}
+document.getElementById('qzNext').onclick=()=>{
+  qi++;
+  if(qi<order.length){showQ()}
+  else{document.querySelector('#quiz .card').style.display='none';document.getElementById('certScore').textContent=`Score: ${qs} / ${order.length}`;document.getElementById('cert').style.display='block'}
+};
+startQuiz();
+
+/* ---------- Start / login ---------- */
+'ABCDEFGHIJKLMNOPQ'.split('').forEach(x=>{const o=document.createElement('option');o.value=o.textContent='6'+x;document.getElementById('scls').appendChild(o)});
+function lockLogin(back){
+  const n=document.getElementById('sname'),c=document.getElementById('scls');
+  n.value=ME.name;c.value=ME.cls;n.disabled=c.disabled=true;
+  document.getElementById('newBtn').style.display='block';
+  const m=document.getElementById('startMsg');m.style.color='var(--ok)';
+  m.textContent=back?`Welcome back, ${ME.name}! Your scores are saved for ${ME.cls}.`:`Welcome, ${ME.name}! Your scores will be saved for ${ME.cls}.`;
+  showWho();
+}
+document.getElementById('goBtn').onclick=()=>{
+  const m=document.getElementById('startMsg');m.style.color='var(--bad)';
+  if(ME){go(1);return}
+  const n=document.getElementById('sname').value.trim().replace(/\s+/g,' '),c=document.getElementById('scls').value;
+  if(n.length<2){m.textContent='✍️ Type your full name first.';return}
+  if(!c){m.textContent='👉 Now select your class.';return}
+  ME={name:n,cls:c,sid:(c+'-'+n).toLowerCase().replace(/[^a-z0-9]+/g,'-')};
+  persist();lockLogin(false);sendScore('Start');setTimeout(()=>go(1),700);
+};
+let newConfirm=false;
+document.getElementById('newBtn').onclick=function(){
+  if(!newConfirm){newConfirm=true;this.textContent='Tap again to start as a new student';return}
+  try{localStorage.removeItem(SKEY)}catch(e){}
+  location.hash='';location.reload();
+};
+if(ME)lockLogin(true);
+
+/* ---------- Tabs ---------- */
+const secs=[...document.querySelectorAll('section')];
+const tabs=[...document.querySelectorAll('nav a')];
+secs.forEach((sec,i)=>{
+  const pg=document.createElement('div');pg.className='pager';
+  pg.innerHTML=`<button class="btn alt" ${i===0?'disabled':''}>⬅ Previous</button><button class="btn" ${i===secs.length-1?'disabled':''}>Next ➜</button>`;
+  const [pv,nx]=pg.children;
+  pv.onclick=()=>go(i-1);nx.onclick=()=>go(i+1);
+  sec.querySelector('.wrap').appendChild(pg);
+});
+function go(i){
+  if(i<0||i>=secs.length)return;
+  if(i>0&&!ME){i=0;const m=document.getElementById('startMsg');m.style.color='var(--bad)';m.textContent='✍️ Type your name and select your class first.'}
+  secs.forEach((s,j)=>s.classList.toggle('active',j===i));
+  tabs.forEach(t=>t.classList.toggle('on',t.getAttribute('href')==='#'+secs[i].id));
+
+  window.scrollTo({top:0,behavior:'smooth'});
+  try{history.replaceState(null,'','#'+secs[i].id)}catch(e){}
+}
+tabs.forEach(t=>t.onclick=e=>{e.preventDefault();go(secs.findIndex(s=>'#'+s.id===t.getAttribute('href')))});
+const startIdx=secs.findIndex(s=>'#'+s.id===location.hash);
+go(startIdx>=0?startIdx:0);
+</script>
+</body>
+</html>
