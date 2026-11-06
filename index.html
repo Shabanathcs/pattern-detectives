@@ -227,6 +227,36 @@
   footer{text-align:center;color:var(--muted);padding:30px 0;font-size:16px}
   @media (max-width:600px){body{font-size:20px}.card,.tag{font-size:20px}.tile{min-width:52px;height:52px;font-size:28px}.opt{font-size:22px}}
 @media (max-width:600px){nav .wrap{gap:6px;padding:8px}nav a{font-size:14px;padding:6px 10px}}
+  /* Compact layout – less scrolling */
+  .wrap{max-width:1150px}
+  section{padding:12px 0}
+  section h2{font-size:clamp(28px,4vw,38px);margin:2px 0 8px}
+  .phase{margin-bottom:2px;font-size:16px;padding:4px 14px}
+  .card{padding:14px 18px;margin:8px 0}
+  .tag{margin:8px 0;padding:10px 16px}
+  .def{padding:16px}
+  .steps{gap:10px}
+  .step{padding:10px}
+  .step .e{font-size:32px}
+  .subh{margin:14px 0 4px;font-size:28px}
+  .grp-head{margin-top:14px;padding:14px}
+  .rules{margin-top:10px}
+  .keyw{margin-top:10px}
+  .lo-box,.sc-box{padding:18px}
+  .hero{padding:4px 0 2px}
+  .hero h1{margin:6px 0 2px}
+  .pager{margin-top:14px;padding-top:10px}
+  #spotList,#mathList{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:10px;margin-top:6px}
+  #spotList .card,#mathList .card{margin:0;padding:10px 12px}
+  #spotList .opts,#mathList .opts{margin-top:8px}
+  .fcards{margin:8px 0}
+  .tmail{margin:8px 0;padding:12px 14px}
+  .mail{padding:10px 14px;margin-bottom:8px}
+  footer{padding:12px 0 16px;font-size:16px;line-height:1.6}
+  footer b{color:var(--ink)}
+  .who{position:fixed;right:12px;bottom:12px;z-index:40;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+  #spotList .fb:empty,#mathList .fb:empty{min-height:0;margin:0}
+  @media (max-width:600px){#spotList,#mathList{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -243,20 +273,19 @@
   <a href="#decide">🚦 Decide</a>
   <a href="#quiz">🏆 Plenary</a>
   <a href="#hot">🔥 HOT</a>
-  <span class="who" id="whoTag"></span>
 </div></nav>
+<span class="who" id="whoTag"></span>
 
-<header class="hero wrap" id="start">
+
+<!-- START / LOGIN -->
+<section id="home"><div class="wrap">
+<header class="hero" id="start">
   <span class="badge">AI MISSION • PATTERN RECOGNITION</span>
   <h1>Pattern Detectives</h1>
   <p>Think like an AI: spot the pattern 👀 → predict 🔮 → decide ✅</p>
   <p style="margin-top:8px;font-size:18px">Simple Pattern Recognition &amp; Decision Making</p>
 </header>
-
-<!-- START / LOGIN -->
-<section id="home"><div class="wrap">
-  <span class="phase p-start">🏠 START</span>
-  <h2>👋 Welcome, Pattern Detective!</h2>
+  <h2 class="center" style="font-size:30px">👋 Welcome, Pattern Detective!</h2>
   <div class="card login">
     <label for="sname">Your full name</label>
     <input id="sname" maxlength="40" placeholder="Type your name" autocomplete="off">
@@ -507,7 +536,7 @@
   <div class="hotq"><div class="qq">3. Design your own IF ➜ THEN rule for a smart school bag or smart classroom.</div></div>
 </div></section>
 
-<footer>Pattern Detectives • AI Lesson • Sharjah Indian School</footer>
+<footer>Teacher designed • Grade 6 Computer Science • Sharjah Indian School, Juwaiza<br>© 2026 <b>Shabanath Shihab</b></footer>
 
 <script>
 /* ---------- Student login + saving scores to Google Sheet ---------- */
