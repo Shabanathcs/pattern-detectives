@@ -299,7 +299,7 @@
     <div class="brand"><span>🕵️</span>Pattern <b>Detectives</b></div>
     <span class="mission">🎯 Pattern Recognition Mission</span>
     <div class="xpbar"><i id="xpFill"></i></div>
-    <span class="xpnum" id="xpNum">⭐ 0 / 33</span>
+    <span class="xpnum" id="xpNum">⭐ 0 / 32</span>
     <span class="rank" id="rankTag">🥉 Rookie</span>
     <span class="whoT" id="whoTag"></span>
   </div>
@@ -589,7 +589,7 @@
 /* ---------- Student login + saving scores to Google Sheet ---------- */
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
 const SCORE_URL = '';
-const SKEY='pd_student', MAXT=33;
+const SKEY='pd_student', MAXT=32;
 let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
 try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
 function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
@@ -881,12 +881,11 @@ const qz=[
   {q:'To an AI, a picture is…',o:['A grid of numbers (pixels)','A painting','A sound'],a:0},
   {q:'Colour, shape and length are examples of…',o:['Passwords','Features','Apps'],a:1},
   {q:'Labelled examples that teach an AI are called…',o:['Homework','Spam','Training data'],a:2},
-  {q:'An AI tested 10 emails and got 8 right. Its accuracy is…',o:['8%','80%','10%'],a:1},
   {q:'Why did our AI mark the teacher\'s "FREE maths class" email as spam?',o:['It saw FREE only in spam emails during training','The teacher sent spam','The AI was switched off'],a:0},
   {q:'"IF the floor is wet ➜ THEN ___"',o:['Run fast','Walk carefully','Close your eyes'],a:1}
 ];
 let qi=0,qs=0,order=[];
-function startQuiz(){order=rand(qz);qi=0;qs=0;document.getElementById('cert').style.display='none';document.querySelector('#quiz .card').style.display='block';showQ()}
+function startQuiz(){order=qz.slice();qi=0;qs=0;document.getElementById('cert').style.display='none';document.querySelector('#quiz .card').style.display='block';showQ()}
 function showQ(){
   const d=order[qi];
   document.getElementById('qzNum').textContent=`Question ${qi+1} of ${order.length}  •  Score: ${qs}`;
