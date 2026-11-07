@@ -307,7 +307,7 @@
     <div class="brand"><span>🕵️</span>Pattern <b>Detectives</b></div>
     <span class="mission">🎯 Pattern Recognition Mission</span>
     <div class="xpbar"><i id="xpFill"></i></div>
-    <span class="xpnum" id="xpNum">⭐ 0 / 37</span>
+    <span class="xpnum" id="xpNum">⭐ 0 / 38</span>
     <span class="rank" id="rankTag">🥉 Rookie</span>
     <span class="whoT" id="whoTag"></span>
   </div>
@@ -597,12 +597,12 @@
 /* ---------- Student login + saving scores to Google Sheet ---------- */
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
 const SCORE_URL = '';
-const SKEY='pd_student', MAXT=37;
+const SKEY='pd_student', MAXT=38;
 let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
 try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
 function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
 const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+(S.testcalc||0)+S.decide+S.quiz;
-const RANKS=[[0,'🥉 Rookie'],[9,'🔍 Spotter'],[18,'🧩 Analyst'],[27,'🕵️ Detective'],[34,'👑 AI Master']];
+const RANKS=[[0,'🥉 Rookie'],[9,'🔍 Spotter'],[19,'🧩 Analyst'],[28,'🕵️ Detective'],[35,'👑 AI Master']];
 function showWho(){
   const t=totalScore(),x=document.getElementById('xpNum'),old=x.textContent;
   document.getElementById('whoTag').textContent=ME?`${ME.name} · ${ME.cls}`:'';
@@ -909,6 +909,7 @@ const qz=[
   {q:'To an AI, a picture is…',o:['A grid of numbers (pixels)','A painting','A sound'],a:0},
   {q:'Colour, shape and length are examples of…',o:['Passwords','Features','Apps'],a:1},
   {q:'Labelled examples that teach an AI are called…',o:['Homework','Spam','Training data'],a:2},
+  {q:'Which app uses pattern recognition to unlock your phone?',o:['Calculator','Face Unlock','Torch'],a:1},
   {q:'Why did our AI mark the teacher\'s "FREE maths class" email as spam?',o:['It saw FREE only in spam emails during training','The teacher sent spam','The AI was switched off'],a:0},
   {q:'"IF the floor is wet ➜ THEN ___"',o:['Run fast','Walk carefully','Close your eyes'],a:1}
 ];
