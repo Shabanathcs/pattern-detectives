@@ -479,7 +479,14 @@
   <h2>🧪 Test Your AI</h2>
   <div class="card center">Now the AI checks <span class="hl">NEW emails</span> it has never seen. It <b>adds the points</b> of the words it learned:<br>
     <span class="rulebox"><span class="k">IF</span> total &gt; 0 ➜ 🚫 Spam &nbsp;&nbsp; <span class="k">ELSE</span> ➜ ✅ Not Spam</span></div>
-  <div id="testList"></div>
+  <div class="trainwrap">
+    <div id="testList"></div>
+    <div class="brain">
+      <h3>🧠 AI Brain: Word Points</h3>
+      <p class="muted" style="margin-bottom:8px">What the AI learned in training. Use it to add up each email!</p>
+      <div id="testBrain"></div>
+    </div>
+  </div>
   <div class="card center big" id="accBox">🎯 AI Accuracy: test all 5 emails!</div>
   <div class="card mistake" id="mistakeBox" style="display:none">
     <b>🤔 Why was Email 5 wrong?</b> <b>FREE</b> and <b>CLICK</b> were only in spam ➜ total <b>+2</b> ➜ Spam.<br>
@@ -840,6 +847,7 @@ startTrain();
 let tested=0,right=0;
 function startTest(){
   tested=0;right=0;
+  document.getElementById('testBrain').innerHTML=chipHTML(FINAL);
   document.getElementById('accBox').textContent='🎯 AI Accuracy: test all 5 emails!';
   document.getElementById('mistakeBox').style.display='none';
   document.getElementById('testList').innerHTML=TEST.map((e,i)=>`<div class="tmail" id="t${i}">
