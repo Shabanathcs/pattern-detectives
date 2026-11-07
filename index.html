@@ -290,6 +290,14 @@
   header.top .wrap{padding:0 8px}
   nav.tabs{gap:4px}
   nav.tabs a{padding:5px 8px}
+  .calc{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+  .calc label{font-weight:800;font-size:21px}
+  .calcIn{width:110px;font-family:inherit;font-size:22px;font-weight:800;text-align:center;padding:6px 8px;border-radius:12px;border:2px solid #3a4892;background:var(--bg2);color:var(--ink)}
+  .calcIn:focus{outline:none;border-color:var(--a)}
+  .calcIn.ok{border-color:var(--ok);color:var(--ok)}
+  .calc .btn{font-size:18px;padding:8px 16px}
+  .calcFb{font-weight:800;font-size:19px;margin-top:6px;min-height:0}
+  .btn[disabled]{opacity:.4;cursor:default}
 </style>
 </head>
 <body>
@@ -299,7 +307,7 @@
     <div class="brand"><span>🕵️</span>Pattern <b>Detectives</b></div>
     <span class="mission">🎯 Pattern Recognition Mission</span>
     <div class="xpbar"><i id="xpFill"></i></div>
-    <span class="xpnum" id="xpNum">⭐ 0 / 32</span>
+    <span class="xpnum" id="xpNum">⭐ 0 / 37</span>
     <span class="rank" id="rankTag">🥉 Rookie</span>
     <span class="whoT" id="whoTag"></span>
   </div>
@@ -477,7 +485,7 @@
 <section id="test"><div class="wrap">
   <span class="phase p-main">📘 MAIN ACTIVITY • PART 4</span>
   <h2>🧪 Test Your AI</h2>
-  <div class="card center">Now the AI checks <span class="hl">NEW emails</span> it has never seen. It <b>adds the points</b> of the words it learned:<br>
+  <div class="card center">Now the AI checks <span class="hl">NEW emails</span>. ✍️ <b>Add the points</b> of the underlined words yourself, then ask the AI:<br>
     <span class="rulebox"><span class="k">IF</span> total &gt; 0 ➜ 🚫 Spam &nbsp;&nbsp; <span class="k">ELSE</span> ➜ ✅ Not Spam</span></div>
   <div class="trainwrap">
     <div id="testList"></div>
@@ -589,12 +597,12 @@
 /* ---------- Student login + saving scores to Google Sheet ---------- */
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
 const SCORE_URL = '';
-const SKEY='pd_student', MAXT=32;
-let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
+const SKEY='pd_student', MAXT=37;
+let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
 try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
 function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
-const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+S.decide+S.quiz;
-const RANKS=[[0,'🥉 Rookie'],[8,'🔍 Spotter'],[16,'🧩 Analyst'],[24,'🕵️ Detective'],[30,'👑 AI Master']];
+const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+(S.testcalc||0)+S.decide+S.quiz;
+const RANKS=[[0,'🥉 Rookie'],[9,'🔍 Spotter'],[18,'🧩 Analyst'],[27,'🕵️ Detective'],[34,'👑 AI Master']];
 function showWho(){
   const t=totalScore(),x=document.getElementById('xpNum'),old=x.textContent;
   document.getElementById('whoTag').textContent=ME?`${ME.name} · ${ME.cls}`:'';
@@ -611,7 +619,7 @@ function rec(k,v){
 function sendScore(what){
   if(!SCORE_URL||!ME)return;
   seq++;persist();
-  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what};
+  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what};
   fetch(SCORE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).catch(()=>{});
 }
 function rand(a){return a.slice().sort(()=>Math.random()-.5)}
@@ -845,17 +853,37 @@ document.getElementById('trainReset').onclick=startTrain;
 startTrain();
 
 let tested=0,right=0;
+let testOk=0;
 function startTest(){
-  tested=0;right=0;
+  tested=0;right=0;testOk=0;
   document.getElementById('testBrain').innerHTML=chipHTML(FINAL);
   document.getElementById('accBox').textContent='🎯 AI Accuracy: test all 5 emails!';
   document.getElementById('mistakeBox').style.display='none';
   document.getElementById('testList').innerHTML=TEST.map((e,i)=>`<div class="tmail" id="t${i}">
-    <div class="mtext">📩 Email ${i+1}: ${e.t}</div>
-    <div style="margin-top:8px"><button class="btn" style="font-size:18px;padding:8px 16px">🤖 Ask the AI</button></div>
+    <div class="mtext">📩 Email ${i+1}: ${hiTxt(e.t,FINAL)}</div>
+    <div class="calc"><label>✍️ Your total:</label><input type="number" step="1" class="calcIn" placeholder="?"><button class="btn alt calcBtn">✅ Check</button></div>
+    <div class="calcFb"></div>
+    <div style="margin-top:8px"><button class="btn ask" style="font-size:18px;padding:8px 16px" disabled>🤖 Ask the AI</button></div>
     <div class="work"></div></div>`).join('');
   TEST.forEach((e,i)=>{
-    const c=document.getElementById('t'+i),btn=c.querySelector('.btn'),wk=c.querySelector('.work');
+    const c=document.getElementById('t'+i),btn=c.querySelector('.ask'),wk=c.querySelector('.work');
+    const inp=c.querySelector('.calcIn'),cb=c.querySelector('.calcBtn'),cf=c.querySelector('.calcFb');
+    const real=words(e.t).filter(w=>w in FINAL&&FINAL[w]!==0).reduce((a,w)=>a+FINAL[w],0);
+    let tries=0;
+    const doCheck=()=>{
+      const v=parseInt(inp.value,10);
+      if(isNaN(v)){cf.textContent='✍️ Type your total first (use the AI Brain points).';cf.style.color='var(--c)';return}
+      tries++;btn.disabled=false;
+      if(v===real){
+        cf.textContent=`✅ Correct! Total = ${sgn(real)}. Now ask the AI.`;cf.style.color='var(--ok)';
+        inp.disabled=cb.disabled=true;inp.classList.add('ok');
+        if(tries===1){testOk++;rec('testcalc',testOk)}
+      }else{
+        cf.textContent=tries<2?'❌ Not quite. Add the points of the underlined words again.':`❌ Not quite. The total is ${sgn(real)}.`;cf.style.color='var(--bad)';
+        if(tries>=2){inp.disabled=cb.disabled=true}
+      }
+    };
+    cb.onclick=doCheck;inp.onkeydown=ev=>{if(ev.key==='Enter')doCheck()};
     btn.onclick=()=>{
       btn.disabled=true;btn.style.opacity=.4;
       c.querySelector('.mtext').innerHTML=`📩 Email ${i+1}: `+hiTxt(e.t,FINAL);

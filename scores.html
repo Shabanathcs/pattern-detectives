@@ -43,19 +43,19 @@
   </div>
   <div class="stats">
     <div class="stat"><b id="sCount">0</b>Students</div>
-    <div class="stat"><b id="sAvg">0</b>Class average /32</div>
+    <div class="stat"><b id="sAvg">0</b>Class average /37</div>
     <div class="stat"><b id="sTop">–</b>Top score</div>
   </div>
   <div class="tbl"><table>
-    <thead><tr><th>#</th><th>Name</th><th>Class</th><th>Starter /5</th><th>Maths /8</th><th>Features /2</th><th>Train AI /6</th><th>Decide /4</th><th>Quiz /7</th><th>Total /32</th><th>Smart Rule</th></tr></thead>
-    <tbody id="rows"><tr><td colspan="11" class="msg">Loading…</td></tr></tbody>
+    <thead><tr><th>#</th><th>Name</th><th>Class</th><th>Starter /5</th><th>Maths /8</th><th>Features /2</th><th>Train AI /6</th><th>Test AI /5</th><th>Decide /4</th><th>Quiz /7</th><th>Total /37</th><th>Smart Rule</th></tr></thead>
+    <tbody id="rows"><tr><td colspan="12" class="msg">Loading…</td></tr></tbody>
   </table></div>
 </div>
 <footer style="text-align:center;color:var(--muted);padding:12px 0 16px;font-size:16px;line-height:1.6">Teacher designed • Grade 6 Computer Science • Sharjah Indian School, Juwaiza<br>© 2026 <b style="color:var(--ink)">Shabanath Shihab</b></footer>
 <script>
 /* Paste the SAME Google Apps Script web-app URL used in index.html */
 const SCORE_URL = '';
-const MAX={starter:5,maths:8,features:2,train:6,decide:4,quiz:7};
+const MAX={starter:5,maths:8,features:2,train:6,decide:4,quiz:7,testcalc:5};
 const sel=document.getElementById('cls');
 'ABCDEFGHIJKLMNOPQ'.split('').forEach(x=>{const o=document.createElement('option');o.value=o.textContent='6'+x;sel.appendChild(o)});
 const q=new URLSearchParams(location.search).get('cls');if(q)sel.value=q;
@@ -63,14 +63,14 @@ const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&g
 const cellv=(r,k)=>`<td class="${Number(r[k])===MAX[k]?'full':''}">${r[k]===''?'–':esc(r[k])}</td>`;
 function load(){
   const body=document.getElementById('rows');
-  if(!SCORE_URL){body.innerHTML='<tr><td colspan="11" class="msg">⚙️ Paste your Google Apps Script web-app URL into SCORE_URL in this file.</td></tr>';return}
+  if(!SCORE_URL){body.innerHTML='<tr><td colspan="12" class="msg">⚙️ Paste your Google Apps Script web-app URL into SCORE_URL in this file.</td></tr>';return}
   fetch(SCORE_URL+'?cls='+encodeURIComponent(sel.value)+'&t='+Date.now()).then(r=>r.json()).then(j=>{
     const rows=(j.rows||[]).sort((a,b)=>(Number(b.total)||0)-(Number(a.total)||0)||String(a.name).localeCompare(b.name));
     const tots=rows.map(r=>Number(r.total)||0);
     document.getElementById('sCount').textContent=rows.length;
     document.getElementById('sAvg').textContent=rows.length?(tots.reduce((a,b)=>a+b,0)/rows.length).toFixed(1):0;
     document.getElementById('sTop').textContent=rows.length?Math.max(...tots):'–';
-    body.innerHTML=rows.length?rows.map((r,i)=>`<tr class="${i===0?'top1':''}"><td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td class="name">${esc(r.name)}</td><td>${esc(r.cls)}</td>${cellv(r,'starter')}${cellv(r,'maths')}${cellv(r,'features')}${cellv(r,'train')}${cellv(r,'decide')}${cellv(r,'quiz')}<td class="tot">${esc(r.total)}</td><td class="rule">${esc(r.rule)}</td></tr>`).join(''):'<tr><td colspan="11" class="msg">No students yet for this class.</td></tr>';
+    body.innerHTML=rows.length?rows.map((r,i)=>`<tr class="${i===0?'top1':''}"><td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td class="name">${esc(r.name)}</td><td>${esc(r.cls)}</td>${cellv(r,'starter')}${cellv(r,'maths')}${cellv(r,'features')}${cellv(r,'train')}${cellv(r,'testcalc')}${cellv(r,'decide')}${cellv(r,'quiz')}<td class="tot">${esc(r.total)}</td><td class="rule">${esc(r.rule)}</td></tr>`).join(''):'<tr><td colspan="12" class="msg">No students yet for this class.</td></tr>';
     document.getElementById('updated').textContent='Last updated '+new Date().toLocaleTimeString();
   }).catch(()=>{document.getElementById('updated').textContent='⚠️ Could not reach the score sheet – retrying…'});
 }
