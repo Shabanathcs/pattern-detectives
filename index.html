@@ -599,7 +599,7 @@
 const SCORE_URL = '';
 const SKEY='pd_student', MAXT=38;
 let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
-try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
+try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid,start:o.start||Date.now()};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
 function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
 const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+(S.testcalc||0)+S.decide+S.quiz;
 const RANKS=[[0,'🥉 Rookie'],[9,'🔍 Spotter'],[19,'🧩 Analyst'],[28,'🕵️ Detective'],[35,'👑 AI Master']];
@@ -616,10 +616,18 @@ function rec(k,v){
   if(typeof v==='number')S[k]=Math.max(S[k]||0,v);else S[k]=v;
   persist();showWho();clearTimeout(sendT);sendT=setTimeout(()=>sendScore(k),1200);
 }
+function recQ(k,i,v){
+  if(!ME)return;
+  const a=S[k]=S[k]||[];a[i]=(a[i]==null)?v:Math.max(a[i],v);
+  const sum=x=>(S[x]||[]).reduce((t,y)=>t+(y||0),0);
+  S.starter=sum('sq');S.maths=sum('mq');S.testcalc=sum('tq');S.quiz=sum('qq');
+  persist();showWho();clearTimeout(sendT);sendT=setTimeout(()=>sendScore(k),1200);
+}
+const rankOf=t=>RANKS.filter(r=>t>=r[0]).pop()[1];
 function sendScore(what){
   if(!SCORE_URL||!ME)return;
   seq++;persist();
-  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what};
+  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what,sq:S.sq||[],mq:S.mq||[],tq:S.tq||[],qq:S.qq||[],rank:rankOf(totalScore()),secs:Math.round((Date.now()-(ME.start||Date.now()))/1000)};
   fetch(SCORE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).catch(()=>{});
 }
 function rand(a){return a.slice().sort(()=>Math.random()-.5)}
@@ -649,7 +657,7 @@ function showSpot(){
       if(b.textContent===p.a){b.classList.add('right');ss++;fb.textContent='✅ Correct! '+p.why;fb.style.color='var(--ok)'}
       else{b.classList.add('wrong');box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===p.a)x.classList.add('right')});fb.textContent='❌ Not quite. '+p.why;fb.style.color='var(--bad)'}
       document.getElementById('spotScore').textContent=`Score: ${ss} / ${spots.length}`;
-      rec('starter',ss);
+      recQ('sq',i,b.textContent===p.a?1:0);
     });
   });
 }
@@ -683,7 +691,7 @@ function showMaths(){
       if(b.textContent===p.a){b.classList.add('right');ms++;fb.textContent='✅ Correct! '+p.why;fb.style.color='var(--ok)'}
       else{b.classList.add('wrong');box.querySelectorAll('.opt').forEach(x=>{if(x.textContent===p.a)x.classList.add('right')});fb.textContent='❌ Not quite. '+p.why;fb.style.color='var(--bad)'}
       document.getElementById('mathScore').textContent=`Score: ${ms} / ${maths.length}`;
-      rec('maths',ms);
+      recQ('mq',i,b.textContent===p.a?1:0);
     });
   });
 }
@@ -877,8 +885,9 @@ function startTest(){
       if(v===real){
         cf.textContent=`✅ Correct! Total = ${sgn(real)}. Now ask the AI.`;cf.style.color='var(--ok)';
         inp.disabled=cb.disabled=true;inp.classList.add('ok');
-        if(tries===1){testOk++;rec('testcalc',testOk)}
+        recQ('tq',i,tries===1?1:0);
       }else{
+        if(tries===1)recQ('tq',i,0);
         cf.textContent=tries<2?'❌ Not quite. Add the points of the underlined words again.':`❌ Not quite. The total is ${sgn(real)}.`;cf.style.color='var(--bad)';
         if(tries>=2){inp.disabled=cb.disabled=true}
       }
@@ -927,7 +936,7 @@ function showQ(){
     if(+b.dataset.i===d.a){b.classList.add('right');qs++;fb.textContent='✅ Correct!';fb.style.color='var(--ok)'}
     else{b.classList.add('wrong');box.querySelector(`[data-i="${d.a}"]`).classList.add('right');fb.textContent='❌ Oops!';fb.style.color='var(--bad)'}
     document.getElementById('qzNum').textContent=`Question ${qi+1} of ${order.length}  •  Score: ${qs}`;
-    rec('quiz',qs);
+    recQ('qq',qi,+b.dataset.i===d.a?1:0);
     document.getElementById('qzNext').style.display='inline-block';
   });
 }
@@ -954,7 +963,7 @@ document.getElementById('goBtn').onclick=()=>{
   const n=document.getElementById('sname').value.trim().replace(/\s+/g,' '),c=document.getElementById('scls').value;
   if(n.length<2){m.textContent='✍️ Type your full name first.';return}
   if(!c){m.textContent='👉 Now select your class.';return}
-  ME={name:n,cls:c,sid:(c+'-'+n).toLowerCase().replace(/[^a-z0-9]+/g,'-')};
+  ME={name:n,cls:c,sid:(c+'-'+n).toLowerCase().replace(/[^a-z0-9]+/g,'-'),start:Date.now()};
   persist();lockLogin(false);sendScore('Start');setTimeout(()=>go(1),700);
 };
 let newConfirm=false;
