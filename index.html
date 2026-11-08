@@ -307,8 +307,9 @@
   .light[aria-pressed="true"]{background:var(--lc);color:#111}
   .light[aria-pressed="true"] .dot{background:#fff}
   @media (max-width:760px){.lights{grid-template-columns:1fr}}
-  .logout{font-family:inherit;font-weight:800;font-size:17px;background:#334155;color:#fff;border:2px solid #64748b;border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap}
-  .logout:hover{border-color:var(--c)}
+  .logout{font-family:inherit;font-weight:800;font-size:17px;background:#f87171;color:#fff;border:none;border-radius:999px;padding:5px 16px;cursor:pointer;white-space:nowrap;box-shadow:0 3px 0 #dc2626}
+  .logout:hover{background:#ef4444}
+  .logout:active{transform:translateY(2px);box-shadow:0 1px 0 #dc2626}
 </style>
 </head>
 <body>
@@ -321,7 +322,7 @@
     <span class="xpnum" id="xpNum">⭐ 0 / 38</span>
     <span class="rank" id="rankTag">🥉 Rookie</span>
     <span class="whoT" id="whoTag"></span>
-    <button class="logout" id="logoutBtn" style="display:none">🔄 New student</button>
+    <button class="logout" id="logoutBtn" style="display:none">↪ Log out</button>
   </div>
   <nav class="tabs">
   <a href="#home">🏠 Start</a>
@@ -1007,7 +1008,7 @@ document.getElementById('goBtn').onclick=()=>{
 function logout(){clearTimeout(sendT);if(ME)sendScore('Logout');setTimeout(()=>{location.replace(location.pathname+location.search)},400)}
 function twoTap(btn,label,fn){let armed=false,t;btn.onclick=()=>{if(!armed){armed=true;btn.textContent='Tap again to confirm';t=setTimeout(()=>{armed=false;btn.textContent=label},3000);return}clearTimeout(t);fn()}}
 twoTap(document.getElementById('newBtn'),'Not you? Start as a new student',logout);
-twoTap(document.getElementById('logoutBtn'),'🔄 New student',logout);
+document.getElementById('logoutBtn').onclick=logout;
 document.getElementById('finishBtn').onclick=()=>{if(!ME){go(0);return}logout()};
 
 /* ---------- Self-assessment ---------- */
