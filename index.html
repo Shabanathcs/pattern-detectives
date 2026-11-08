@@ -596,7 +596,7 @@
 <script>
 /* ---------- Student login + saving scores to Google Sheet ---------- */
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
-const SCORE_URL = '';
+const SCORE_URL = 'https://script.google.com/macros/s/AKfycbzx_Q3s7gxb_Uarcxci6UJr9WVO1Hro0kGIyVGmLkOULJ2P_4qY7D2iDghxTQb3oBN2/exec';
 const SKEY='pd_student', MAXT=38;
 let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
 try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid,start:o.start||Date.now()};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
