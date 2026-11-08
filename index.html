@@ -307,6 +307,8 @@
   .light[aria-pressed="true"]{background:var(--lc);color:#111}
   .light[aria-pressed="true"] .dot{background:#fff}
   @media (max-width:760px){.lights{grid-template-columns:1fr}}
+  .logout{font-family:inherit;font-weight:800;font-size:17px;background:#334155;color:#fff;border:2px solid #64748b;border-radius:999px;padding:4px 12px;cursor:pointer;white-space:nowrap}
+  .logout:hover{border-color:var(--c)}
 </style>
 </head>
 <body>
@@ -319,6 +321,7 @@
     <span class="xpnum" id="xpNum">⭐ 0 / 38</span>
     <span class="rank" id="rankTag">🥉 Rookie</span>
     <span class="whoT" id="whoTag"></span>
+    <button class="logout" id="logoutBtn" style="display:none">🔄 New student</button>
   </div>
   <nav class="tabs">
   <a href="#home">🏠 Start</a>
@@ -609,6 +612,11 @@
   <div class="hotq"><div class="qq">1. Your spam AI learned only from English emails. What will happen with an Arabic spam message? Why?</div></div>
   <div class="hotq"><div class="qq">2. Face Unlock works well for you but not for your twin. Why could it get confused?</div></div>
   <div class="hotq"><div class="qq">3. Design your own IF ➜ THEN rule for a smart school bag or smart classroom.</div></div>
+  <div class="card center finish">
+    <p class="big">🏁 Finished the lesson?</p>
+    <p>Your scores are saved. Click below so the next student can start fresh.</p>
+    <button class="btn" id="finishBtn" style="margin-top:10px">✅ Finish &amp; log out</button>
+  </div>
 </div></section>
 
 <footer>Teacher designed • Grade 6 Computer Science • Sharjah Indian School, Juwaiza<br>© 2026 <b>Shabanath Shihab</b></footer>
@@ -617,10 +625,16 @@
 /* ---------- Student login + saving scores to Google Sheet ---------- */
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
 const SCORE_URL = 'https://script.google.com/macros/s/AKfycbzx_Q3s7gxb_Uarcxci6UJr9WVO1Hro0kGIyVGmLkOULJ2P_4qY7D2iDghxTQb3oBN2/exec';
-const SKEY='pd_student', MAXT=38;
-let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:'',self:''},seq=0,sendT=null;
-try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid,start:o.start||Date.now()};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
-function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
+/* Every page load starts with an empty Start form (shared lab computers).
+   Each student's progress is kept on this computer by name + class, so logging in again restores it. */
+const SKEY='pd_students', MAXT=38;
+const S0={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:'',self:''};
+let ME=null,S={...S0},seq=0,sendT=null;
+try{localStorage.removeItem('pd_student')}catch(e){}
+function loadAll(){try{return JSON.parse(localStorage.getItem(SKEY)||'{}')||{}}catch(e){return {}}}
+function persist(){if(!ME)return;try{const all=loadAll();all[ME.sid]={S,start:ME.start,t:Date.now()};
+  const ks=Object.keys(all).sort((a,b)=>all[b].t-all[a].t);ks.slice(80).forEach(k=>delete all[k]);
+  localStorage.setItem(SKEY,JSON.stringify(all))}catch(e){}}
 const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+(S.testcalc||0)+S.decide+S.quiz;
 const RANKS=[[0,'🥉 Rookie'],[9,'🔍 Spotter'],[19,'🧩 Analyst'],[28,'🕵️ Detective'],[35,'👑 AI Master']];
 function showWho(){
@@ -646,7 +660,7 @@ function recQ(k,i,v){
 const rankOf=t=>RANKS.filter(r=>t>=r[0]).pop()[1];
 function sendScore(what){
   if(!SCORE_URL||!ME)return;
-  seq++;persist();
+  seq=Math.max(seq+1,Date.now());persist();
   const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what,sq:S.sq||[],mq:S.mq||[],tq:S.tq||[],qq:S.qq||[],rank:rankOf(totalScore()),self:S.self||'',secs:Math.round((Date.now()-(ME.start||Date.now()))/1000)};
   fetch(SCORE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).catch(()=>{});
 }
@@ -973,6 +987,7 @@ function lockLogin(back){
   const n=document.getElementById('sname'),c=document.getElementById('scls');
   n.value=ME.name;c.value=ME.cls;n.disabled=c.disabled=true;
   document.getElementById('newBtn').style.display='block';
+  document.getElementById('logoutBtn').style.display='inline-block';
   const m=document.getElementById('startMsg');m.style.color='var(--ok)';
   m.textContent=back?`Welcome back, ${ME.name}! Your scores are saved for ${ME.cls}.`:`Welcome, ${ME.name}! Your scores will be saved for ${ME.cls}.`;
   showWho();
@@ -983,16 +998,17 @@ document.getElementById('goBtn').onclick=()=>{
   const n=document.getElementById('sname').value.trim().replace(/\s+/g,' '),c=document.getElementById('scls').value;
   if(n.length<2){m.textContent='✍️ Type your full name first.';return}
   if(!c){m.textContent='👉 Now select your class.';return}
-  ME={name:n,cls:c,sid:(c+'-'+n).toLowerCase().replace(/[^a-z0-9]+/g,'-'),start:Date.now()};
-  persist();lockLogin(false);sendScore('Start');setTimeout(()=>go(1),700);
+  const sid=(c+'-'+n).toLowerCase().replace(/[^a-z0-9]+/g,'-'),old=loadAll()[sid];
+  ME={name:n,cls:c,sid,start:old?old.start:Date.now()};
+  S={...S0,...(old?old.S:{})};
+  persist();lockLogin(!!old);showSelf();sendScore('Start');setTimeout(()=>go(1),700);
 };
-let newConfirm=false;
-document.getElementById('newBtn').onclick=function(){
-  if(!newConfirm){newConfirm=true;this.textContent='Tap again to start as a new student';return}
-  try{localStorage.removeItem(SKEY)}catch(e){}
-  location.hash='';location.reload();
-};
-if(ME)lockLogin(true);
+/* Log out: next student gets a clean page */
+function logout(){clearTimeout(sendT);if(ME)sendScore('Logout');setTimeout(()=>{location.replace(location.pathname+location.search)},400)}
+function twoTap(btn,label,fn){let armed=false,t;btn.onclick=()=>{if(!armed){armed=true;btn.textContent='Tap again to confirm';t=setTimeout(()=>{armed=false;btn.textContent=label},3000);return}clearTimeout(t);fn()}}
+twoTap(document.getElementById('newBtn'),'Not you? Start as a new student',logout);
+twoTap(document.getElementById('logoutBtn'),'🔄 New student',logout);
+document.getElementById('finishBtn').onclick=()=>{if(!ME){go(0);return}logout()};
 
 /* ---------- Self-assessment ---------- */
 function showSelf(){document.querySelectorAll('#lights .light').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===+S.self)))}
