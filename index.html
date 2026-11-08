@@ -298,6 +298,15 @@
   .calc .btn{font-size:18px;padding:8px 16px}
   .calcFb{font-weight:800;font-size:19px;margin-top:6px;min-height:0}
   .btn[disabled]{opacity:.4;cursor:default}
+  .selfbox{background:var(--card);border:2px solid #3a4892;border-radius:20px;padding:16px 18px;margin-top:14px}
+  .selfbox h3{font-size:26px;margin-bottom:4px}
+  .lights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:10px}
+  .light{--lc:#22c55e;display:flex;gap:12px;align-items:center;border:3px solid var(--lc);background:var(--bg2);color:var(--ink);border-radius:16px;padding:12px 14px;cursor:pointer;font-family:inherit;font-size:21px;text-align:left;box-shadow:0 4px 0 var(--lc)}
+  .light.a{--lc:#f59e0b}.light.r{--lc:#ef4444}
+  .light .dot{flex:none;width:34px;height:34px;border-radius:50%;background:var(--lc);box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)}
+  .light[aria-pressed="true"]{background:var(--lc);color:#111}
+  .light[aria-pressed="true"] .dot{background:#fff}
+  @media (max-width:760px){.lights{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -580,6 +589,17 @@
     <div class="card"><b>Testing &amp; Accuracy</b><br>Checking AI on new data — how often is it right?</div>
     <div class="card"><b>Decision</b><br>IF (observation) ➜ THEN (action).</div>
   </div>
+
+  <div class="selfbox">
+    <h3>🚦 Self-assessment: How confident are you with pattern recognition and how AI learns?</h3>
+    <p class="muted">Think about today's success criteria. Be honest – it helps your teacher help you!</p>
+    <div class="lights" id="lights">
+      <button class="light g" data-v="3"><span class="dot"></span><b>I can do it on my own</b></button>
+      <button class="light a" data-v="2"><span class="dot"></span><b>I can do it with a little help</b></button>
+      <button class="light r" data-v="1"><span class="dot"></span><b>I need more help</b></button>
+    </div>
+    <div class="fb" id="selfMsg"></div>
+  </div>
 </div></section>
 
 <!-- HOT -->
@@ -598,7 +618,7 @@
 /* Paste your Google Apps Script web-app URL between the quotes (leave '' to switch saving off). */
 const SCORE_URL = 'https://script.google.com/macros/s/AKfycbzx_Q3s7gxb_Uarcxci6UJr9WVO1Hro0kGIyVGmLkOULJ2P_4qY7D2iDghxTQb3oBN2/exec';
 const SKEY='pd_student', MAXT=38;
-let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:''},seq=0,sendT=null;
+let ME=null,S={starter:0,maths:0,features:0,featq:0,train:0,testcalc:0,decide:0,quiz:0,rule:'',self:''},seq=0,sendT=null;
 try{const o=JSON.parse(localStorage.getItem(SKEY)||'null');if(o&&o.sid){ME={name:o.name,cls:o.cls,sid:o.sid,start:o.start||Date.now()};Object.assign(S,o.S||{});seq=o.seq||0}}catch(e){}
 function persist(){if(!ME)return;try{localStorage.setItem(SKEY,JSON.stringify({...ME,S,seq}))}catch(e){}}
 const totalScore=()=>S.starter+S.maths+S.features+S.featq+S.train+(S.testcalc||0)+S.decide+S.quiz;
@@ -627,7 +647,7 @@ const rankOf=t=>RANKS.filter(r=>t>=r[0]).pop()[1];
 function sendScore(what){
   if(!SCORE_URL||!ME)return;
   seq++;persist();
-  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what,sq:S.sq||[],mq:S.mq||[],tq:S.tq||[],qq:S.qq||[],rank:rankOf(totalScore()),secs:Math.round((Date.now()-(ME.start||Date.now()))/1000)};
+  const d={sid:ME.sid,seq,name:ME.name,cls:ME.cls,starter:S.starter,maths:S.maths,features:S.features+S.featq,train:S.train,testcalc:S.testcalc||0,decide:S.decide,quiz:S.quiz,total:totalScore(),rule:S.rule,what,sq:S.sq||[],mq:S.mq||[],tq:S.tq||[],qq:S.qq||[],rank:rankOf(totalScore()),self:S.self||'',secs:Math.round((Date.now()-(ME.start||Date.now()))/1000)};
   fetch(SCORE_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)}).catch(()=>{});
 }
 function rand(a){return a.slice().sort(()=>Math.random()-.5)}
@@ -973,6 +993,17 @@ document.getElementById('newBtn').onclick=function(){
   location.hash='';location.reload();
 };
 if(ME)lockLogin(true);
+
+/* ---------- Self-assessment ---------- */
+function showSelf(){document.querySelectorAll('#lights .light').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===+S.self)))}
+document.querySelectorAll('#lights .light').forEach(b=>b.onclick=()=>{
+  const m=document.getElementById('selfMsg');
+  if(!ME){m.textContent='✍️ Log in on the Start tab first.';m.style.color='var(--bad)';return}
+  S.self=+b.dataset.v;persist();showSelf();
+  m.textContent='✅ Thank you! Your teacher can see your answer.';m.style.color='var(--ok)';
+  clearTimeout(sendT);sendT=setTimeout(()=>sendScore('self'),600);
+});
+showSelf();
 
 /* ---------- Tabs ---------- */
 const secs=[...document.querySelectorAll('section')];
